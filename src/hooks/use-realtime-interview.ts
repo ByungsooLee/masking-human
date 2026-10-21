@@ -34,6 +34,7 @@ export function useRealtimeInterview() {
   const copyRef = useRef(getLiveUiCopy(resolveLiveUiLocale()));
   const stopRef = useRef<(() => void) | null>(null);
   const usageSessionIdRef = useRef<string | null>(null);
+  const usagePatchTokenRef = useRef<string | null>(null);
 
   const connectionStatus = useRealtimeInterviewStore((s) => s.connectionStatus);
   const listeningPhase = useRealtimeInterviewStore((s) => s.listeningPhase);
@@ -56,7 +57,9 @@ export function useRealtimeInterview() {
     const session = sessionRef.current;
     sessionRef.current = null;
     const usageId = usageSessionIdRef.current;
+    const patchToken = usagePatchTokenRef.current;
     usageSessionIdRef.current = null;
+    usagePatchTokenRef.current = null;
 
     setConnectionStatus("disconnecting");
     setListeningPhase("hidden");
@@ -66,8 +69,8 @@ export function useRealtimeInterview() {
     } catch {
       /* ignore */
     }
-    if (usageId) {
-      await patchUsageSession(usageId, { ended: true });
+    if (usageId && patchToken) {
+      await patchUsageSession(usageId, patchToken, { ended: true });
     }
     timingRef.current = createUtteranceTimingState();
     resetAiTimingCursor();
@@ -104,6 +107,7 @@ export function useRealtimeInterview() {
         clientSecret?: string;
         model?: string;
         sessionId?: string;
+        patchToken?: string;
         error?: string;
         detail?: string;
         code?: string;
@@ -112,8 +116,9 @@ export function useRealtimeInterview() {
         throw new Error(data.detail ?? data.error ?? copyRef.current.connectionFailed);
       }
       const model = data.model ?? DEFAULT_REALTIME_MODEL;
-      if (data.sessionId) {
+      if (data.sessionId && data.patchToken) {
         usageSessionIdRef.current = data.sessionId;
+        usagePatchTokenRef.current = data.patchToken;
         setUsageSessionId(data.sessionId);
       }
 
@@ -146,8 +151,9 @@ export function useRealtimeInterview() {
         applyTimingFromTransportEvent(event, timingRef.current, elapsedRef.current());
         const usage = extractResponseDoneUsage(event);
         const sid = usageSessionIdRef.current;
-        if (!usage || !sid) return;
-        void patchUsageSession(sid, { usage }).then((usd) => {
+        const patchToken = usagePatchTokenRef.current;
+        if (!usage || !sid || !patchToken) return;
+        void patchUsageSession(sid, patchToken, { usage }).then((usd) => {
           if (typeof usd === "number") setSessionEstimatedUsd(usd);
         });
       });

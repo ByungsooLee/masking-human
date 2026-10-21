@@ -14,6 +14,7 @@ export function useMockRealtimeInterview() {
   const copyRef = useRef(getLiveUiCopy(resolveLiveUiLocale()));
   const stopRef = useRef<(() => void) | null>(null);
   const usageSessionIdRef = useRef<string | null>(null);
+  const usagePatchTokenRef = useRef<string | null>(null);
 
   const connectionStatus = useRealtimeInterviewStore((s) => s.connectionStatus);
   const listeningPhase = useRealtimeInterviewStore((s) => s.listeningPhase);
@@ -37,12 +38,14 @@ export function useMockRealtimeInterview() {
     cancelTimelineRef.current?.();
     cancelTimelineRef.current = null;
     const usageId = usageSessionIdRef.current;
+    const patchToken = usagePatchTokenRef.current;
     usageSessionIdRef.current = null;
+    usagePatchTokenRef.current = null;
     setConnectionStatus("disconnecting");
     setListeningPhase("hidden");
     disarm();
-    if (usageId) {
-      await patchUsageSession(usageId, { ended: true });
+    if (usageId && patchToken) {
+      await patchUsageSession(usageId, patchToken, { ended: true });
     }
     reset();
   }, [disarm, reset, setConnectionStatus, setListeningPhase]);
@@ -71,9 +74,10 @@ export function useMockRealtimeInterview() {
       body: JSON.stringify({ isMock: true }),
     });
     if (trackRes.ok) {
-      const track = (await trackRes.json()) as { sessionId?: string };
-      if (track.sessionId) {
+      const track = (await trackRes.json()) as { sessionId?: string; patchToken?: string };
+      if (track.sessionId && track.patchToken) {
         usageSessionIdRef.current = track.sessionId;
+        usagePatchTokenRef.current = track.patchToken;
         setUsageSessionId(track.sessionId);
       }
     }

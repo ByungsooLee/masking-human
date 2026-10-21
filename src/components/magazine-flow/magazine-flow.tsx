@@ -30,11 +30,7 @@ function MagazineFlowInner({ mockOnly: mockFromUrl }: Props) {
   const sessionEstimatedUsd = useRealtimeInterviewStore((s) => s.sessionEstimatedUsd);
 
   const showBack =
-    phase === "slate" ||
-    phase === "conversation" ||
-    phase === "review" ||
-    phase === "magazine" ||
-    phase === "publish";
+    phase === "slate" || phase === "conversation" || phase === "magazine" || phase === "publish";
   const showCost = phase === "conversation";
 
   return (

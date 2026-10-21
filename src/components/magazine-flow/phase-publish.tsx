@@ -72,11 +72,15 @@ export function PhasePublish() {
   };
 
   const confirmPublish = async () => {
-    setPrepare({ consents: { ...prepare.consents, snsPublish: publishConsentConfirmed } });
+    const prepareForArchive = {
+      ...prepare,
+      consents: { ...prepare.consents, snsPublish: publishConsentConfirmed },
+    };
+    setPrepare({ consents: prepareForArchive.consents });
     await saveArchivedSession({
       id: crypto.randomUUID(),
       savedAt: new Date().toISOString(),
-      prepare,
+      prepare: prepareForArchive,
       transcript,
       draft,
       slateAtMs: recordingSlateAtMs,

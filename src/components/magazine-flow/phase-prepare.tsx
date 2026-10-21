@@ -143,9 +143,12 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
             <input
               type="checkbox"
               checked={prepare.includeCamera}
+              disabled={!prepare.consents.photoVideo}
               onChange={(e) => setPrepare({ includeCamera: e.target.checked })}
             />
-            <span>{ui.includeCamera}</span>
+            <span className={prepare.consents.photoVideo ? undefined : "text-[color:var(--color-ink-muted)]"}>
+              {ui.includeCamera}
+            </span>
           </label>
         </div>
 
@@ -154,6 +157,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
             [
               ["aiConversation", ui.consentAiStreet],
               ["recording", ui.consentRecordingStreet],
+              ["photoVideo", ui.consentPhotoStreet],
               ["snsPublish", ui.consentPublishStreet],
             ] as const
           ).map(([key, label]) => (
@@ -162,9 +166,13 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
                 <input
                   type="checkbox"
                   checked={prepare.consents[key]}
-                  onChange={(e) =>
-                    setPrepare({ consents: { ...prepare.consents, [key]: e.target.checked } })
-                  }
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setPrepare({
+                      consents: { ...prepare.consents, [key]: checked },
+                      ...(key === "photoVideo" && !checked ? { includeCamera: false } : {}),
+                    });
+                  }}
                 />
                 <span className="leading-[var(--leading-body)]">{label}</span>
               </label>

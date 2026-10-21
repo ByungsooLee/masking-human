@@ -6,12 +6,12 @@ import {
   mergeSessionUsageDelta,
   updateSessionUsage,
 } from "@/lib/usage/session-usage-store";
+import { authorizeSessionPatch } from "@/lib/usage/authorize-session-patch";
 import { estimateUsdFromSnapshot } from "@/lib/usage/estimate-cost";
 import { emptyUsageSnapshot } from "@/lib/usage/normalize-usage";
 
 type PatchBody = {
   usage?: RawRealtimeUsage;
-  estimatedUsd?: number;
   ended?: boolean;
 };
 
@@ -20,6 +20,9 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/usage/session/
   const existing = getSessionRecord(id);
   if (!existing) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  }
+  if (!authorizeSessionPatch(req, id)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   let body: PatchBody;
@@ -34,19 +37,20 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/usage/session/
     mergeSessionUsageDelta(id, delta);
   }
 
-  if (typeof body.estimatedUsd === "number") {
-    updateSessionUsage(id, { estimatedUsd: body.estimatedUsd });
-  }
-
   if (body.ended) {
     endSession(id);
   }
 
   const record = getSessionRecord(id);
-  if (record && body.usage && typeof body.estimatedUsd !== "number") {
+  if (record && body.usage) {
     const estimatedUsd = estimateUsdFromSnapshot(record.model, record.usage);
     updateSessionUsage(id, { estimatedUsd });
   }
 
-  return NextResponse.json({ session: getSessionRecord(id) ?? record });
+  const updated = getSessionRecord(id) ?? record;
+  if (!updated) {
+    return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  }
+  const { patchToken: _token, ...session } = updated;
+  return NextResponse.json({ session });
 }

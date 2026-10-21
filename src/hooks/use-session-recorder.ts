@@ -77,12 +77,6 @@ export function useSessionRecorder() {
         const dest = ctx.createMediaStreamDestination();
         ctx.createMediaStreamSource(new MediaStream(mic.getAudioTracks())).connect(dest);
 
-        clockRef.current.start();
-        if (options.playBeep) {
-          await playSlateBeep(ctx, dest);
-          setSlateAtMs(clockRef.current.elapsedMs());
-        }
-
         const tracks = [...dest.stream.getAudioTracks()];
         if (options.includeCamera) {
           for (const t of mic.getVideoTracks()) tracks.push(t);
@@ -93,9 +87,17 @@ export function useSessionRecorder() {
         rec.ondataavailable = (e) => {
           if (e.data.size > 0) chunksRef.current.push(e.data);
         };
+
+        clockRef.current.start();
         rec.start(250);
         recorderRef.current = rec;
         setRecording(true);
+
+        if (options.playBeep) {
+          await playSlateBeep(ctx, dest);
+          setSlateAtMs(clockRef.current.elapsedMs());
+        }
+
         return true;
       } catch {
         setError("recorder_unavailable");

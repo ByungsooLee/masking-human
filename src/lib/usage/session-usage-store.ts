@@ -21,6 +21,7 @@ export function createSessionRecord(params: {
   const sessionId = randomUUID();
   const record: SessionUsageRecord = {
     sessionId,
+    patchToken: randomUUID(),
     model: params.model,
     startedAt: Date.now(),
     endedAt: null,

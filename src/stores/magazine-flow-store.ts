@@ -117,7 +117,6 @@ export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
     const prev: Partial<Record<MagazineFlowPhase, MagazineFlowPhase>> = {
       slate: "prepare",
       conversation: "slate",
-      review: "conversation",
       magazine: "review",
       publish: "magazine",
     };

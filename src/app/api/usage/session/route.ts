@@ -16,5 +16,5 @@ export async function POST(req: Request) {
     isMock,
   });
 
-  return NextResponse.json({ sessionId: record.sessionId });
+  return NextResponse.json({ sessionId: record.sessionId, patchToken: record.patchToken });
 }

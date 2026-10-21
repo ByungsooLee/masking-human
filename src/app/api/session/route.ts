@@ -73,6 +73,7 @@ export async function POST(req: Request) {
       clientSecret: data.value,
       model,
       sessionId: record.sessionId,
+      patchToken: record.patchToken,
       budgetWarning: summary.warning80,
     });
   } catch (err) {

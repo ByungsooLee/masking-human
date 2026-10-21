@@ -21,6 +21,7 @@ export function PhaseSlate({ mockOnly }: Props) {
   const started = useRef(false);
   const [lines, setLines] = useState(0);
   const [flash, setFlash] = useState(false);
+  const [blocked, setBlocked] = useState<string | null>(null);
 
   const bootLines = [ui.bootLineVoice, ui.bootLineMic, ui.bootLineSlate];
   const graph = useMemo(() => buildConversationGraph([], lines * 2), [lines]);
@@ -35,14 +36,22 @@ export function PhaseSlate({ mockOnly }: Props) {
         await wait(LINE_GAP_MS);
       }
       if (mockOnly) {
-        await recorder.startMockSilent(getMockConversationDurationMs() + 2000, true);
+        const ok = await recorder.startMockSilent(getMockConversationDurationMs() + 2000, true);
+        if (!ok) {
+          setBlocked(ui.slateRecordingFailed);
+          return;
+        }
         setRecordingSlateAtMs(recorder.clock.elapsedMs() > 0 ? 300 : 0);
       } else {
         const ok = await recorder.startWithSlate({
           includeCamera: prepare.includeCamera,
           playBeep: true,
         });
-        if (ok) setRecordingSlateAtMs(recorder.clock.elapsedMs());
+        if (!ok) {
+          setBlocked(ui.slateRecordingFailed);
+          return;
+        }
+        setRecordingSlateAtMs(recorder.slateAtMs ?? recorder.clock.elapsedMs());
       }
       setFlash(true);
       await wait(450);
@@ -56,7 +65,17 @@ export function PhaseSlate({ mockOnly }: Props) {
         <ThoughtGraph graph={graph} mode="boot" className="h-full w-full" />
       </div>
       <ul className="flex min-h-[6em] flex-col gap-1 text-[length:var(--text-body)]" aria-live="polite">
-        {bootLines.slice(0, lines).map((line, i) => (
+        {blocked && (
+        <div className="flex flex-col items-center gap-4">
+          <p className="max-w-[24em] text-center text-[color:var(--color-rose)]" role="alert">
+            {blocked}
+          </p>
+          <button type="button" className="ui-btn-sub" onClick={() => setPhase("prepare")}>
+            {ui.back}
+          </button>
+        </div>
+      )}
+      {bootLines.slice(0, lines).map((line, i) => (
           <li key={line} className={`ui-line-in ${i === lines - 1 ? "text-[color:var(--color-rose)]" : "text-[color:var(--color-ink-muted)]"}`}>
             {line}
           </li>

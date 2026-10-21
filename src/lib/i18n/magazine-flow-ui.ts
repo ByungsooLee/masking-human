@@ -17,6 +17,8 @@ export type MagazineFlowUi = {
   consentAiStreet: string;
   consentRecordingStreet: string;
   consentPublishStreet: string;
+  consentPhotoStreet: string;
+  slateRecordingFailed: string;
   includeCamera: string;
   micLevel: string;
   startDemo: string;
@@ -125,6 +127,9 @@ const JA: MagazineFlowUi = {
   consentRecordingStreet: "インタビューの音声が端末に録音され、編集素材として保存されることに同意する",
   consentPublishStreet:
     "YouTube や Instagram などへの投稿の可能性があることを説明を受け、問題ない",
+  consentPhotoStreet:
+    "この端末のカメラで映像も録画し、編集素材として保存されることに同意する",
+  slateRecordingFailed: "録音を始められませんでした。マイクとカメラの許可を確認して、もう一度準備から始めてください",
   includeCamera: "この端末のカメラも一緒に録画する",
   micLevel: "マイク",
   startDemo: "デモの会話で試す",

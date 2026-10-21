@@ -16,6 +16,8 @@ export type UsageTokenSnapshot = {
 
 export type SessionUsageRecord = {
   sessionId: string;
+  /** Required on PATCH; issued once when the session is created. */
+  patchToken: string;
   model: string;
   startedAt: number;
   endedAt: number | null;

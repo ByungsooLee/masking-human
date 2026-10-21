@@ -21,7 +21,7 @@ function buildTitle(prepare: Pick<PrepareState, "guestName" | "place">, heroText
   const headline = parts.find((s) => s.length >= 8) ?? parts[0] ?? heroText.trim();
   if (headline.length >= 4) return headline.slice(0, 22);
   if (prepare.place.trim()) return `${prepare.place.trim()}の手入れ`;
-  return fromHero.slice(0, 24);
+  return heroText.trim().slice(0, 24);
 }
 
 function buildLead(prepare: Pick<PrepareState, "guestName" | "place" | "language">): string {
