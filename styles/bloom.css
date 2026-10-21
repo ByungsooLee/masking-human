@@ -1,0 +1,284 @@
+/*
+ * Bloom: the interview shell. Light cosmetic tones (pearl, blush, rose, lilac) with an
+ * Obsidian-like graph of linked words. Exported magazine pages keep data-theme="magazine".
+ */
+[data-theme="bloom"] {
+  --color-pearl: #fbf6f4;
+  --color-blush: #f4cfd4;
+  --color-rose: #b4466e;
+  --color-lilac: #a99ad8;
+  --color-ink: #3a2832;
+  --color-ink-muted: #76606b;
+  --color-thread: #e5d3d8;
+
+  --color-ground: var(--color-pearl);
+  --color-line: var(--color-thread);
+  --color-accent: var(--color-rose);
+
+  --text-body: 0.9375rem;
+  --text-lead: 1.25rem;
+  --text-display: clamp(1.75rem, 4.4vw, 2.75rem);
+
+  --font-body: var(--font-bloom), "Zen Maru Gothic", sans-serif;
+  --font-display: var(--font-bloom), "Zen Maru Gothic", sans-serif;
+  --radius-soft: 14px;
+}
+
+[data-theme="bloom"] :focus-visible {
+  outline: 2px solid var(--color-rose);
+  outline-offset: 3px;
+}
+
+[data-theme="bloom"] ::selection {
+  background: var(--color-blush);
+  color: var(--color-ink);
+}
+
+.bloom-ground {
+  background-color: var(--color-pearl);
+  color: var(--color-ink);
+}
+
+.ui-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-heading {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-lead);
+  line-height: var(--leading-tight);
+  color: var(--color-ink);
+}
+
+.ui-panel {
+  background: #ffffff;
+  border: 1px solid var(--color-thread);
+  border-radius: var(--radius-soft);
+  padding: 1.25rem;
+}
+
+.ui-panel[data-active="true"] {
+  border-color: var(--color-rose);
+}
+
+.ui-btn {
+  background: var(--color-rose);
+  color: #ffffff;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 0.7rem 1.6rem;
+  width: fit-content;
+}
+
+.ui-btn:disabled {
+  background: var(--color-thread);
+  color: var(--color-ink-muted);
+}
+
+.ui-btn-sub {
+  border: 1px solid var(--color-rose);
+  color: var(--color-rose);
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  width: fit-content;
+}
+
+.ui-btn-sub:disabled {
+  border-color: var(--color-thread);
+  color: var(--color-ink-muted);
+}
+
+.ui-btn-sub[aria-pressed="true"] {
+  background: var(--color-rose);
+  color: #ffffff;
+}
+
+.ui-field {
+  background: #ffffff;
+  border: 1px solid var(--color-thread);
+  border-radius: 10px;
+  color: var(--color-ink);
+  padding: 0.55rem 0.75rem;
+}
+
+.ui-field:focus-visible {
+  border-color: var(--color-rose);
+}
+
+[data-theme="bloom"] input[type="checkbox"] {
+  accent-color: var(--color-rose);
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: 0.3em;
+  flex-shrink: 0;
+}
+
+/* Review timeline: a thread with one node per utterance. */
+.ui-thread {
+  position: relative;
+  padding-left: 1.75rem;
+}
+
+.ui-thread::before {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--color-thread);
+}
+
+.ui-thread-node {
+  position: absolute;
+  left: calc(0.45rem - 4.25px);
+  top: 1.45rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-lilac);
+}
+
+.ui-thread-node[data-speaker="guest"] {
+  background: #ffffff;
+  border: 1.5px solid var(--color-rose);
+}
+
+/* Word chips: a keyboard path into the graph. */
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  background: #ffffff;
+  border: 1px solid var(--color-thread);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  color: var(--color-ink);
+}
+
+.ui-chip[aria-pressed="true"] {
+  border-color: var(--color-rose);
+  background: var(--color-blush);
+}
+
+/* Same marks as the graph: person = lilac ring, feeling = blush dot, word = rose dot. */
+.ui-facet-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+}
+
+.ui-facet-mark::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--color-rose);
+  opacity: 0.7;
+}
+
+.ui-facet-mark[data-facet="person"]::before {
+  background: #ffffff;
+  border: 2px solid var(--color-lilac);
+  opacity: 1;
+}
+
+.ui-facet-mark[data-facet="feeling"]::before {
+  background: var(--color-blush);
+  border: 1px solid var(--color-rose);
+  opacity: 1;
+}
+
+/* Laddering steps joined by a thread; reached steps turn rose. */
+.ui-ladder {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ui-ladder li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-ink-muted);
+}
+
+.ui-ladder li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-thread);
+  background: #ffffff;
+}
+
+.ui-ladder li + li {
+  padding-left: 1.6rem;
+  position: relative;
+}
+
+.ui-ladder li + li::after {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 50%;
+  width: 1.2rem;
+  height: 1.5px;
+  background: var(--color-thread);
+}
+
+.ui-ladder li[data-reached="true"] {
+  color: var(--color-rose);
+}
+
+.ui-ladder li[data-reached="true"]::before {
+  border-color: var(--color-rose);
+  background: var(--color-rose);
+}
+
+.ui-ladder li[data-reached="true"] + li[data-reached="true"]::after {
+  background: var(--color-rose);
+}
+
+.ui-ladder li[aria-current="step"] {
+  font-weight: 500;
+}
+
+@keyframes ui-line-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ui-line-in {
+  animation: ui-line-in 0.4s ease-out both;
+}
+
+@keyframes ui-flash {
+  0% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.ui-flash {
+  background: radial-gradient(circle at 50% 45%, #ffffff, var(--color-blush) 55%, transparent 85%);
+  animation: ui-flash 0.45s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-line-in,
+  .ui-flash {
+    animation: none;
+  }
+}

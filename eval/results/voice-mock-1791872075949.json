@@ -1,0 +1,25 @@
+{
+  "mode": "mock",
+  "results": [
+    {
+      "lang": "en",
+      "stt": "I use sunscreen every morning.",
+      "ttsAssetId": "bad33001-0d0f-4545-8a5a-763b93dd0646"
+    },
+    {
+      "lang": "ja",
+      "stt": "毎朝日焼け止めを塗っています。",
+      "ttsAssetId": "0a5dd6e2-f1c5-4667-94b5-d945bc9b98b2"
+    },
+    {
+      "lang": "ko",
+      "stt": "매일 아침 선크림을 바릅니다.",
+      "ttsAssetId": "84b93cf9-abe8-40a0-b208-0b06ed8dd095"
+    },
+    {
+      "lang": "zh-CN",
+      "stt": "我每天早上涂防晒。",
+      "ttsAssetId": "39d34ea1-4719-4d81-9d7f-c08d892a1b9e"
+    }
+  ]
+}

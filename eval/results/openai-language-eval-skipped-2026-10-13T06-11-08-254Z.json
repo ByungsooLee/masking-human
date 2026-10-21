@@ -1,0 +1,5 @@
+{
+  "status": "skipped",
+  "reason": "OPENAI_API_KEY or INTERVIEW_PROVIDER=openai not set",
+  "at": "2026-10-13T06:11:08.255Z"
+}
