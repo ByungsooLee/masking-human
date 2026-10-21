@@ -1,0 +1,30 @@
+[
+  { "id": "01-no-makeup", "themeId": "A", "turns": ["I don't use makeup at all."] },
+  { "id": "02-short-yes", "themeId": "B", "turns": ["yes"] },
+  { "id": "03-contradiction", "themeId": "C", "turns": ["I love makeup but also I don't — it's not for me sometimes."] },
+  { "id": "04-no-insight", "themeId": "A", "turns": ["Nothing special, no insight really."] },
+  { "id": "05-anxiety-camera", "themeId": "A", "turns": ["I feel anxious about how I look on camera."] },
+  { "id": "06-sunscreen-daily", "themeId": "D", "turns": ["I wear SPF 50 every day because my mother insisted."] },
+  { "id": "07-future-self", "themeId": "B", "turns": ["I buy creams for a future me who will have time to care."] },
+  { "id": "08-for-others", "themeId": "C", "turns": ["I only wear lipstick when I meet clients."] },
+  { "id": "09-parasol", "themeId": "D", "turns": ["I always carry a parasol in summer."] },
+  { "id": "10-minimal-routine", "themeId": "E", "turns": ["If I stopped everything, I'd still be me — just tired-looking."] },
+  { "id": "11-many-products", "themeId": "A", "turns": ["I own many lipsticks but use three.", "They are mostly for mood, not insecurity."] },
+  { "id": "12-decline-topic", "themeId": "C", "turns": ["I don't want to talk about my family.", "Skincare is just practical for me."] },
+  {
+    "id": "13-skip-flow",
+    "themeId": "E",
+    "steps": [{ "command": "skip", "text": "" }, { "text": "I wash my face at night." }]
+  },
+  {
+    "id": "14-change-topic",
+    "themeId": "B",
+    "steps": [{ "command": "change_topic", "text": "" }, { "text": "Present me prefers simple drugstore items." }]
+  },
+  { "id": "15-rich-detail", "themeId": "A", "turns": ["Morning: cleanser, vitamin C, SPF. Night: oil then moisturizer because dry air.", "It feels like respect for my skin, not vanity."] },
+  { "id": "16-end-early", "themeId": "D", "turns": [], "endAfterTurn": 0 },
+  { "id": "17-neutral-short", "themeId": "B", "turns": ["no"] },
+  { "id": "18-self-vs-seen", "themeId": "C", "turns": ["Makeup is for me in the mirror first.", "Others noticing is secondary."] },
+  { "id": "19-routine-identity", "themeId": "E", "turns": ["My routine is short.", "Without it I'd feel less grounded, not a different person."] },
+  { "id": "20-sun-guard", "themeId": "D", "turns": ["Sunscreen guards my skin and my outdoor running habit.", "A tan would mean losing that ritual."] }
+]

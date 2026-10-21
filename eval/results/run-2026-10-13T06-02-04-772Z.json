@@ -1,0 +1,652 @@
+{
+  "generated_at": "2026-10-13T06:02:04.772Z",
+  "provider": "mock",
+  "ai_judge_enabled": false,
+  "results": [
+    {
+      "scenarioId": "01-no-makeup",
+      "themeId": "A",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Collection and confidence\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I don't use makeup at all.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Thanks for saying that. What do you still do—or skip—for skin or appearance that feels like 'you'?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "02-short-yes",
+      "themeId": "B",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Present self vs. future self\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "yes",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you give one small example from a recent day—what happened and what you did?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "03-contradiction",
+      "themeId": "C",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"For self or for being seen\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I love makeup but also I don't — it's not for me sometimes.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Both sounds can coexist—when does each side feel more true for you?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "04-no-insight",
+      "themeId": "A",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Collection and confidence\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "Nothing special, no insight really.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "That's okay. Is there a small habit you keep anyway—without needing it to mean something big?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "05-anxiety-camera",
+      "themeId": "A",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Collection and confidence\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I feel anxious about how I look on camera.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "When that worry shows up, what do you usually do—and what would you call that in your own words?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "06-sunscreen-daily",
+      "themeId": "D",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"What sun protection guards\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I wear SPF 50 every day because my mother insisted.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "07-future-self",
+      "themeId": "B",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Present self vs. future self\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I buy creams for a future me who will have time to care.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "08-for-others",
+      "themeId": "C",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"For self or for being seen\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I only wear lipstick when I meet clients.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "09-parasol",
+      "themeId": "D",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"What sun protection guards\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I always carry a parasol in summer.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "10-minimal-routine",
+      "themeId": "E",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Self without the routine\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "If I stopped everything, I'd still be me — just tired-looking.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "11-many-products",
+      "themeId": "A",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Collection and confidence\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I own many lipsticks but use three.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "They are mostly for mood, not insecurity.",
+          "stage": "motivation"
+        },
+        {
+          "role": "assistant",
+          "text": "What matters to you about that habit, in your own words?",
+          "stage": "motivation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "12-decline-topic",
+      "themeId": "C",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"For self or for being seen\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I don't want to talk about my family.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "Skincare is just practical for me.",
+          "stage": "motivation"
+        },
+        {
+          "role": "assistant",
+          "text": "What matters to you about that habit, in your own words?",
+          "stage": "motivation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "13-skip-flow",
+      "themeId": "E",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Self without the routine\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "I wash my face at night.",
+          "stage": "motivation"
+        },
+        {
+          "role": "assistant",
+          "text": "What matters to you about that habit, in your own words?",
+          "stage": "motivation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "14-change-topic",
+      "themeId": "B",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Present self vs. future self\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "We can shift angle—what part of your relationship with beauty feels most true to you right now?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "Present me prefers simple drugstore items.",
+          "stage": "motivation"
+        },
+        {
+          "role": "assistant",
+          "text": "What matters to you about that habit, in your own words?",
+          "stage": "motivation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "15-rich-detail",
+      "themeId": "A",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Collection and confidence\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "Morning: cleanser, vitamin C, SPF. Night: oil then moisturizer because dry air.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "It feels like respect for my skin, not vanity.",
+          "stage": "motivation"
+        },
+        {
+          "role": "assistant",
+          "text": "What matters to you about that habit, in your own words?",
+          "stage": "motivation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "16-end-early",
+      "themeId": "D",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"What sun protection guards\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Understood — we'll stop here. Thank you for what you shared.",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "17-neutral-short",
+      "themeId": "B",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Present self vs. future self\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "no",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you give one small example from a recent day—what happened and what you did?",
+          "stage": "observation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "18-self-vs-seen",
+      "themeId": "C",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"For self or for being seen\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "Makeup is for me in the mirror first.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "Others noticing is secondary.",
+          "stage": "motivation"
+        },
+        {
+          "role": "assistant",
+          "text": "What matters to you about that habit, in your own words?",
+          "stage": "motivation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "19-routine-identity",
+      "themeId": "E",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"Self without the routine\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "My routine is short.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "Without it I'd feel less grounded, not a different person.",
+          "stage": "motivation"
+        },
+        {
+          "role": "assistant",
+          "text": "What matters to you about that habit, in your own words?",
+          "stage": "motivation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    },
+    {
+      "scenarioId": "20-sun-guard",
+      "themeId": "D",
+      "provider": "mock",
+      "transcript": [
+        {
+          "role": "assistant",
+          "text": "To start on \"What sun protection guards\": Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "Sunscreen guards my skin and my outdoor running habit.",
+          "stage": "observation"
+        },
+        {
+          "role": "assistant",
+          "text": "Could you walk me through what you actually do in a typical day related to beauty or skincare—only what feels comfortable to share?",
+          "stage": "observation"
+        },
+        {
+          "role": "user",
+          "text": "A tan would mean losing that ritual.",
+          "stage": "motivation"
+        },
+        {
+          "role": "assistant",
+          "text": "What matters to you about that habit, in your own words?",
+          "stage": "motivation"
+        }
+      ],
+      "ai_evaluation": null,
+      "human_evaluation": {
+        "reviewer": null,
+        "scores": null,
+        "notes": null
+      },
+      "flagged_for_human_review": true
+    }
+  ]
+}
