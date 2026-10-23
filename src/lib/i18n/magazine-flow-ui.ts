@@ -1,4 +1,4 @@
-import { resolveLiveUiLocale, type LiveUiLocale } from "./live-ui";
+import type { LiveUiLocale } from "./live-ui";
 
 export type MagazineFlowUi = {
   prepareHeading: string;
@@ -145,8 +145,8 @@ const JA: MagazineFlowUi = {
   aiNow: "いまの質問",
   guestNow: "いまの言葉",
   endConversation: "会話を終えて確認へ",
-  buildingPage: "ページを組み立てています",
-  buildPageFailed: "ページを作れませんでした。ゲストの発言が足りないかもしれません",
+  buildingPage: "分析結果を整理しています",
+  buildPageFailed: "分析結果を整理できませんでした。文字起こしを確認してください",
   demoWaitForClimax: "デモの会話が最後まで流れるまで待っています",
   recordingOn: "収録中",
   recordingOff: "待機",
@@ -158,8 +158,8 @@ const JA: MagazineFlowUi = {
   titleLabel: "タイトル",
   leadLabel: "リード",
   heroLabel: "一番いい言葉",
-  saveDraft: "雑誌ページを作る",
-  magazineHeading: "雑誌ページ",
+  saveDraft: "分析結果を確認する",
+  magazineHeading: "分析結果を確認する",
   aspect45: "4:5",
   aspect916: "9:16",
   aspect169: "16:9",
@@ -167,7 +167,7 @@ const JA: MagazineFlowUi = {
   downloadPng: "PNG を保存",
   downloadJson: "会話ログ（JSON）",
   downloadSrt: "字幕（SRT）",
-  downloadAudio: "収録音声",
+  downloadAudio: "収録ファイル（音声・映像）",
   exportEditBundle: "動画編集用",
   exportInstagram: "Instagram",
   exportYoutube: "YouTube",
@@ -188,7 +188,7 @@ const JA: MagazineFlowUi = {
   waitingFirstQuestion: "最初の質問を待っています",
   playFrom: (time) => `${time} から聞く`,
   toPublish: "保存の画面へ進む",
-  exportEditHint: "字幕の時刻は同期合図の音を 0 秒としています",
+  exportEditHint: "編集に使う音声・映像に合わせて字幕の時間基準を選べます",
   carouselHint: (count) => `4:5 の画像 ${count} 枚とストーリー 1 枚を保存します`,
   exportFailed: "画像を書き出せませんでした。ページを再読み込みしてもう一度試してください",
   savedToArchive: "履歴に残しました",
@@ -219,8 +219,23 @@ const JA: MagazineFlowUi = {
   showOnMap: "地図でつながりを見る",
 };
 
-const EN: MagazineFlowUi = { ...JA, prepareHeading: "Prepare", startConversation: "Start after slate" };
+const EN: MagazineFlowUi = {
+  prepareHeading: "Prepare your interview", guestName: "Name (optional)", place: "Location", language: "Language", languageJa: "Japanese", languageEn: "English",
+  agent: "Listening style", agentDefault: "Warm and gentle", agentReflective: "Thoughtful and reflective",
+  consentAi: "I agree to an AI conversation", consentPhoto: "I agree to use photos and video in the article", consentRecording: "I agree to recording and transcript storage", consentPublish: "I understand the interview may be published",
+  consentAiStreet: "I agree to speak with an AI interviewer and have the conversation recorded as text and audio.",
+  consentRecordingStreet: "I agree to record the interview on this device and save it for editing.",
+  consentPublishStreet: "I understand and accept that the interview may be posted on YouTube, Instagram, or similar services.",
+  consentPhotoStreet: "I agree to record video with this device's camera and save it for editing.",
+  slateRecordingFailed: "Recording could not start. Check microphone and camera permissions, then return to preparation and try again.",
+  includeCamera: "Record video with this device's camera", micLevel: "Microphone", startDemo: "Try the demo conversation", demoHint: "Try the complete experience with a scripted conversation. No AI API calls are made.", demoPlace: "Demo",
+  micHearing: "Your microphone is picking up sound", micQuiet: "No sound detected. Speak and check whether the level meter responds.", micDenied: "Microphone access is blocked. Allow it in your browser's address bar.", sessionFailed: "Could not start the session",
+  startConversation: "Start after the sync cue", slateRunning: "Playing the sync cue", conversationHeading: "Conversation", aiNow: "Current question", guestNow: "Your words", endConversation: "End conversation and review",
+  buildingPage: "Organizing your findings", buildPageFailed: "Could not organize the findings. Please check the transcript.", demoWaitForClimax: "Waiting for the demo conversation to finish", recordingOn: "Recording", recordingOff: "Standby", reviewHeading: "Review your conversation", noRecording: "No recording available (the demo may contain silent audio)", excludeLine: "Exclude this statement from the report", continue: "Continue", back: "Back",
+  titleLabel: "Title", leadLabel: "Introduction", heroLabel: "Featured quote", saveDraft: "Review analysis results", magazineHeading: "Review analysis results", aspect45: "4:5", aspect916: "9:16", aspect169: "16:9", publishHeading: "Save and export", downloadPng: "Save PNG", downloadJson: "Conversation (JSON)", downloadSrt: "Subtitles (SRT)", downloadAudio: "Recording (audio/video)", exportEditBundle: "For video editing", exportInstagram: "Instagram", exportYoutube: "YouTube", downloadCarousel: "Save carousel PNGs", downloadYoutubeThumb: "Thumbnail PNG (16:9)", downloadYoutubeText: "Video description", publishConfirm: "I confirm this content can be published", finish: "Finish and save to history", validationFailed: "Quotes must come from the guest's recorded words", noGuestYet: "No guest speech yet", archiveLink: "History", archiveHeading: "Interview history", archiveEmpty: "No saved interviews yet", archiveDelete: "Delete", backToLive: "Back to interview", appName: "Memories of Care", usageLink: "Usage", waitingFirstQuestion: "Waiting for the first question", playFrom: (time) => `Play from ${time}`, toPublish: "Continue to save and export", exportEditHint: "Choose a subtitle time origin that matches your editing footage.", carouselHint: (count) => `Save ${count} images in 4:5 and one story image.`, exportFailed: "Export failed. Reload the page and try again.", savedToArchive: "Saved to history",
+  stateConnecting: "Connecting", stateThinking: "Thinking", stateSpeaking: "Speaking", stateListening: "Listening", linkedWords: (count) => `${count} connected words`, endingConversation: "Finishing recording", bootLineVoice: "Connecting your interviewer", bootLineMic: "Microphone connected", bootLineSlate: "Playing the sync cue", systemReady: "Speak when you are ready", depthRings: ["Habits", "Reasons", "Memories & people"], depthHeading: "Conversation depth", openWordsLabel: "Topics to explore", facetPerson: "People", facetFeeling: "Feelings", facetWord: "Words", mapHeading: "Word connections", mapHint: "Select a word or node to highlight its source statements", answersWithWord: (word) => `Answers mentioning “${word}”`, wordsInAnswer: "Words in this answer", clearFocus: "Clear selection", archiveMapHint: "Interviews connect through shared people, feelings, and words. Select a node to explore.", sessionsWithWord: (word) => `Interviews mentioning “${word}”`, archiveListHeading: "List", showOnMap: "Explore connections",
+};
 
-export function getMagazineFlowUi(locale?: LiveUiLocale): MagazineFlowUi {
-  return (locale ?? resolveLiveUiLocale()) === "en" ? EN : JA;
+export function getMagazineFlowUi(locale: LiveUiLocale = "ja"): MagazineFlowUi {
+  return locale === "en" ? EN : JA;
 }

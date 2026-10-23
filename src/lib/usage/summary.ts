@@ -1,6 +1,7 @@
 import { computeBudgetStatus } from "./budget";
 import { fetchMonthlyCostsUsd } from "./fetch-monthly-costs";
-import { getSessionRecord, sumTodayEstimatedUsd } from "./session-usage-store";
+import { getSessionRecord, sumTodayEstimatedUsd, sumMonthEstimatedUsd } from "./session-usage-store";
+import { buildSpendAlert } from "./spend-alert";
 import type { UsageSummary } from "./types";
 
 export async function buildUsageSummary(sessionId?: string | null): Promise<UsageSummary> {
@@ -22,6 +23,7 @@ export async function buildUsageSummary(sessionId?: string | null): Promise<Usag
 
   return {
     ...budget,
+    spendAlert: buildSpendAlert(monthly.available ? monthly.monthlyUsd : null, sumMonthEstimatedUsd()),
     currentSessionEstimatedUsd,
     costsNote,
   };

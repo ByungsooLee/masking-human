@@ -1,6 +1,7 @@
 "use client";
 
 import { formatEstimatedUsd } from "@/lib/i18n/usage-ui";
+import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 
 type Props = {
   estimatedUsd: number | null;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function SessionCostBadge({ estimatedUsd, pricingConfigured, inline = false }: Props) {
+  const language = useMagazineFlowStore((state) => state.prepare.language);
   const hideFromRecording = process.env.NEXT_PUBLIC_HIDE_COST_FROM_RECORDING === "1";
 
   return (
@@ -21,7 +23,7 @@ export function SessionCostBadge({ estimatedUsd, pricingConfigured, inline = fal
       data-hide-from-recording={hideFromRecording ? "true" : "false"}
       aria-live="polite"
     >
-      {formatEstimatedUsd(estimatedUsd, pricingConfigured)}
+      {formatEstimatedUsd(estimatedUsd, pricingConfigured, language)}
     </div>
   );
 }

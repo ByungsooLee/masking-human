@@ -10,6 +10,10 @@ const BodySchema = z
   .object({
     agentId: z.enum(["default", "reflective"]).optional(),
     interviewLanguage: z.enum(["ja", "en"]).optional(),
+    interviewerProfile: z.object({
+      age: z.enum(["young", "adult", "senior"]),
+      gender: z.enum(["woman", "man", "neutral"]),
+    }).optional(),
   })
   .optional();
 
@@ -44,6 +48,7 @@ export async function POST(req: Request) {
   const model = getRealtimeModel();
   const record = createSessionRecord({ model, isMock: false });
 
+  const sessionConfig = buildRealtimeClientSecretSession(body);
   try {
     const response = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
       method: "POST",
@@ -52,10 +57,7 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        session: buildRealtimeClientSecretSession({
-          agentId: body?.agentId,
-          interviewLanguage: body?.interviewLanguage,
-        }),
+        session: sessionConfig,
       }),
     });
 
@@ -72,6 +74,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       clientSecret: data.value,
       model,
+      instructions: sessionConfig.instructions,
+      voice: sessionConfig.audio.output.voice,
       sessionId: record.sessionId,
       patchToken: record.patchToken,
       budgetWarning: summary.warning80,

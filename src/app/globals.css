@@ -18,3 +18,154 @@ body {
   font-family: var(--font-body, system-ui, sans-serif);
   line-height: var(--leading-body, 1.8);
 }
+
+.mag-page[data-edition] {
+  --color-ground: #f9f9f7;
+  --color-ink: #2b2b2b;
+  --color-ink-muted: #66615f;
+  --color-plum: #8c6b73;
+  --color-glass: #d9d3d3;
+  --color-milk: #f9f9f7;
+  --color-blush: #f9f9f7;
+  --color-rose: #8c6b73;
+  background: var(--color-ground);
+  color: var(--color-ink);
+}
+
+.mag-page[data-edition] {
+  border: 1px solid var(--color-glass);
+  border-radius: 0;
+  box-shadow: none;
+  --mag-pad: 7cqw;
+  --mag-gap: 4cqw;
+}
+
+.mag-page[data-aspect="16:9"] { --mag-pad: 4cqw; --mag-gap: 2cqw; }
+.mag-page[data-aspect="9:16"] { --mag-pad: 7cqw; --mag-gap: 5cqw; }
+
+.mag-title {
+  font-family: var(--font-display);
+  font-size: 5cqw;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.mag-page[data-aspect="16:9"] .mag-title { font-size: 2.8cqw; }
+
+.mag-masthead {
+  padding-bottom: 1.5em;
+  border-bottom: 1px solid var(--color-glass);
+}
+
+.mag-pullquote {
+  position: relative;
+  width: 100%;
+  padding: 0.5em 0.8em;
+  font-family: var(--font-display);
+  line-height: 1.8;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.mag-quote-mark, .mag-quote-close {
+  position: absolute;
+  color: var(--color-plum);
+  font-family: Georgia, serif;
+  font-size: 2.8em;
+  line-height: 1;
+}
+
+.mag-quote-mark { top: -0.05em; left: -0.05em; }
+.mag-quote-close { bottom: -0.35em; right: 0; }
+.mag-qa-list { display: flex; flex-direction: column; gap: var(--mag-gap); }
+.mag-qa-pair + .mag-qa-pair { border-top: 1px solid var(--color-glass); padding-top: var(--mag-gap); }
+.mag-question { color: var(--color-plum); font-size: var(--mag-caption); font-weight: 600; line-height: 1.7; }
+.mag-answer { padding-left: 1.25em; margin-top: 0.65em; color: var(--color-ink); line-height: 1.9; overflow-wrap: anywhere; }
+
+.analytics-magazine {
+  --color-ground: #f9f9f7;
+  --color-milk: #f9f9f7;
+  --color-ink: #2a2a28;
+  --color-ink-muted: #66615f;
+  --color-rose: #8c6b73;
+  --report-sage: #b2c8ba;
+  --report-line: #d9d3d3;
+  background: var(--color-ground);
+  color: var(--color-ink);
+  border: 1px solid var(--report-line);
+  padding: clamp(1.25rem, 5vw, 4rem);
+  overflow-wrap: anywhere;
+}
+.report-caption { font-size: 0.8125rem; color: var(--color-ink-muted); }
+.report-title { font-family: var(--font-mag-display), serif; font-size: clamp(1.75rem, 4vw, 3rem); letter-spacing: -0.035em; line-height: 1.5; margin-block: 2rem; }
+.report-quote { font-family: var(--font-mag-display), serif; font-size: clamp(1.25rem, 2.4vw, 2rem); margin-block: 3rem; padding-inline: 1rem; }
+.report-quote > span { display: block; font-family: Georgia, serif; font-size: 3em; line-height: 0.7; color: var(--color-rose); }
+.report-quote > span:last-child { text-align: right; }
+.report-quote p { margin-block: 1rem; }
+.report-section { border-top: 1px solid var(--report-line); padding-top: clamp(2rem, 12svh, 7rem); margin-top: clamp(3rem, 20svh, 12rem); }
+.report-section h3 { font-size: 1.25rem; margin-bottom: 1.5rem; }
+.report-section h4 { margin-block: 2rem 0.5rem; }
+.report-metrics, .report-flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; margin-block: 2rem; }
+.report-metrics strong { display: block; font-size: 1.5625rem; font-weight: 500; margin-top: 0.75rem; }
+.report-flow section { border-top: 2px solid var(--report-sage); padding-top: 1rem; }
+.report-analytics-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 2rem; }
+.report-analytics-grid svg { width: 100%; height: auto; }
+.report-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; text-align: left; }
+.report-table caption { text-align: left; margin-bottom: 1rem; }
+.report-table :is(th, td) { border-bottom: 1px solid var(--report-line); padding: 0.75rem 0.4rem; vertical-align: top; }
+.report-kpis { margin-block: 2rem; }
+.report-kpis dt { color: var(--color-rose); margin-top: 1rem; }
+.report-topic-title { font-family: var(--font-mag-display), serif; font-size: 1.5625rem; margin-block: 1rem; }
+.report-table meter { width: 5rem; max-width: 100%; accent-color: var(--color-rose); vertical-align: middle; }
+.report-metadata { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8125rem; margin-block: 1rem; }
+.analysis-findings { max-width: 48rem; line-height: 1.9; }
+.analysis-findings h2 { font-size: 1.5625rem; margin-bottom: 1rem; }
+.analysis-findings h3 { font-size: 1.25rem; margin-bottom: 1rem; }
+.analysis-findings > ol > li { border-top: 1px solid var(--color-thread); padding-block: 2rem; }
+.analysis-findings .finding-result { font-size: 1.125rem; margin-bottom: 1rem; }
+.analysis-findings summary, .analysis-secondary > summary { min-height: 48px; padding-block: 0.75rem; cursor: pointer; color: var(--color-rose); }
+.analysis-findings blockquote { border-left: 2px solid var(--color-rose); padding-left: 1rem; margin-block: 1rem; }
+.analysis-findings fieldset { margin-top: 1rem; }
+.analysis-findings legend { margin-bottom: 0.75rem; }
+.analysis-findings .finding-note { font-size: 0.875rem; color: var(--color-ink-muted); margin-block: 1rem; }
+.analytics-magazine summary { min-height: 48px; padding-block: 0.75rem; cursor: pointer; }
+.analytics-magazine .self-analysis-map { margin-top: 2rem; }
+@media (max-width: 767px) {
+  .report-analytics-grid, .report-metrics, .report-flow { grid-template-columns: minmax(0, 1fr); }
+}
+
+.mag-page[data-edition="ink"] {
+  --color-ground: #202b31;
+  --color-ink: #f0f3f2;
+  --color-ink-muted: #c0cecb;
+  --color-plum: #d5dfdb;
+  --color-milk: #34434a;
+  --color-blush: #455b60;
+  --color-rose: #d5dfdb;
+}
+
+.mag-page[data-edition="sage"] {
+  --color-ground: #dce8df;
+  --color-ink: #253b34;
+  --color-ink-muted: #435f53;
+  --color-plum: #304b3f;
+  --color-milk: #eef2eb;
+}
+
+.mag-statement {
+  font-family: var(--font-body, sans-serif);
+  font-size: clamp(1rem, 6cqw, 5rem);
+  line-height: 1.65;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.interview-dashboard {
+  padding: clamp(1rem, 3vw, 2rem);
+  border-radius: var(--radius-soft);
+  background: var(--color-ground);
+}

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { isPricingConfigured } from "../../../config/pricing";
 import { RecordingSessionProvider } from "@/contexts/recording-session-context";
 import { FlowChrome } from "@/components/magazine-flow/flow-chrome";
 import { PhaseConversation } from "@/components/magazine-flow/phase-conversation";
 import { PhaseMagazine } from "@/components/magazine-flow/phase-magazine";
 import { PhasePrepare } from "@/components/magazine-flow/phase-prepare";
-import { PhasePublish } from "@/components/magazine-flow/phase-publish";
+import { PhaseResults } from "@/components/magazine-flow/phase-results";
 import { PhaseReview } from "@/components/magazine-flow/phase-review";
 import { PhaseSlate } from "@/components/magazine-flow/phase-slate";
 import { DEFAULT_REALTIME_MODEL } from "@/lib/realtime/config";
@@ -18,6 +18,8 @@ import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 type Props = { mockOnly: boolean };
 
 function MagazineFlowInner({ mockOnly: mockFromUrl }: Props) {
+  const restorePrepareDefaults = useMagazineFlowStore((state) => state.restorePrepareDefaults);
+  useEffect(() => { restorePrepareDefaults(); }, [restorePrepareDefaults]);
   const phase = useMagazineFlowStore((s) => s.phase);
   const [demoChosen, setDemoChosen] = useState(false);
   const [prevPhase, setPrevPhase] = useState(phase);
@@ -42,6 +44,7 @@ function MagazineFlowInner({ mockOnly: mockFromUrl }: Props) {
         sessionEstimatedUsd={sessionEstimatedUsd}
         pricingConfigured={isPricingConfigured(DEFAULT_REALTIME_MODEL)}
         showCost={showCost}
+        mockOnly={mockFromUrl}
       />
       <main className="flex-1">
         {phase === "prepare" && <PhasePrepare mockOnly={mockOnly} onStartDemo={() => setDemoChosen(true)} />}
@@ -49,7 +52,7 @@ function MagazineFlowInner({ mockOnly: mockFromUrl }: Props) {
         {phase === "conversation" && <PhaseConversation mockOnly={mockOnly} />}
         {phase === "review" && <PhaseReview />}
         {phase === "magazine" && <PhaseMagazine />}
-        {phase === "publish" && <PhasePublish />}
+        {phase === "publish" && <PhaseResults mockOnly={mockOnly} />}
       </main>
     </div>
   );

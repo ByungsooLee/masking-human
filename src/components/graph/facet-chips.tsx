@@ -1,7 +1,7 @@
 "use client";
 
 import type { GraphNode, TagFacet } from "@/lib/graph/build-conversation-graph";
-import { getMagazineFlowUi } from "@/lib/i18n/magazine-flow-ui";
+import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 
 type Props = {
   nodes: GraphNode[];
@@ -13,7 +13,7 @@ const ORDER: TagFacet[] = ["person", "feeling", "word"];
 
 /** Keyboard path into the graph: every tag node is also a toggle button, grouped by what it stands for. */
 export function FacetChips({ nodes, selectedId, onSelect }: Props) {
-  const ui = getMagazineFlowUi();
+  const ui = useMagazineFlowUi();
   const title: Record<TagFacet, string> = { person: ui.facetPerson, feeling: ui.facetFeeling, word: ui.facetWord };
   const groups = ORDER.map((facet) => ({ facet, tags: nodes.filter((n) => n.kind === "tag" && n.facet === facet) })).filter(
     (g) => g.tags.length > 0,

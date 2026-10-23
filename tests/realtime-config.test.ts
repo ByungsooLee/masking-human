@@ -22,7 +22,7 @@ describe("getRealtimeModel", () => {
 });
 
 describe("REALTIME_SESSION_DURATION_MS", () => {
-  it("is 3 minutes", () => {
-    expect(REALTIME_SESSION_DURATION_MS).toBe(180_000);
+  it("is 10 minutes", () => {
+    expect(REALTIME_SESSION_DURATION_MS).toBe(600_000);
   });
 });

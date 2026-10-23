@@ -1,9 +1,12 @@
 "use client";
 
+import { useUiTranslator } from "@/hooks/use-ui-translator";
+
 import { useEffect, useState } from "react";
 import { isPricingConfigured } from "../../../config/pricing";
 import { formatEstimatedUsd, formatUsd, getUsageUiCopy } from "@/lib/i18n/usage-ui";
-import type { UsageSummary } from "@/lib/usage/types";
+import { useUsageSummary } from "@/hooks/use-usage-summary";
+import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 
 type SessionRow = {
   sessionId: string;
@@ -16,18 +19,16 @@ type SessionRow = {
 type DailyRow = { date: string; estimatedUsd: number };
 
 export function UsageDashboard() {
-  const copy = getUsageUiCopy();
-  const [summary, setSummary] = useState<UsageSummary | null>(null);
+  const t = useUiTranslator();
+  const language = useMagazineFlowStore((state) => state.prepare.language);
+  const copy = getUsageUiCopy(language);
+  const { summary } = useUsageSummary(null);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [daily, setDaily] = useState<DailyRow[]>([]);
 
   useEffect(() => {
     void (async () => {
-      const [sRes, lRes] = await Promise.all([
-        fetch("/api/usage/summary"),
-        fetch("/api/usage/sessions"),
-      ]);
-      if (sRes.ok) setSummary((await sRes.json()) as UsageSummary);
+      const lRes = await fetch("/api/usage/sessions");
       if (lRes.ok) {
         const data = (await lRes.json()) as {
           sessions: SessionRow[];
@@ -42,6 +43,12 @@ export function UsageDashboard() {
   return (
     <div className="theme-ground theme-body mx-auto min-h-screen max-w-[var(--content-max)] px-[var(--space-page-x)] py-[var(--space-page-y)]">
       <h1 className="mb-[var(--space-block)] text-[length:var(--text-display)]">{copy.pageTitle}</h1>
+      {summary?.spendAlert && <section className="mb-6 rounded-xl border p-4">
+        <h2>{t("今月の1ドルアラート：")}{summary.spendAlert.exceeded ? t("超過") : t("未超過")}</h2>
+        <p>{t("判定額：$")}{summary.spendAlert.amountUsd.toFixed(3)}（{summary.spendAlert.source === "actual" ? t("実績") : t("推定")}）</p>
+        <p className="mt-2 text-sm">{t(summary.spendAlert.note)}</p>
+        <p className="mt-2 text-sm">{t("アプリを開いている間、約30秒ごとに確認します。期間はUTCの暦月です。通知のみで自動停止はしません。")}</p>
+      </section>}
 
       {!summary?.pricingConfigured && (
         <p className="mb-6 text-sm text-[color:var(--color-ink-muted)]">{copy.pricingUnset}</p>
@@ -54,6 +61,7 @@ export function UsageDashboard() {
             {formatEstimatedUsd(
               summary?.currentSessionEstimatedUsd,
               summary?.pricingConfigured ?? true,
+              language,
             )}
           </p>
         </div>
@@ -91,7 +99,7 @@ export function UsageDashboard() {
           <li key={s.sessionId} className="border-l border-[color:var(--color-line)] pl-3">
             <p>{new Date(s.startedAt).toLocaleString()}</p>
             <p className="text-[color:var(--color-ink-muted)]">
-              {formatEstimatedUsd(s.estimatedUsd, isPricingConfigured(s.model))} · {s.model}
+              {formatEstimatedUsd(s.estimatedUsd, isPricingConfigured(s.model), language)} · {s.model}
               {s.isMock ? " · mock" : ""}
             </p>
           </li>

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ConversationGraph } from "@/lib/graph/build-conversation-graph";
-import { getMagazineFlowUi } from "@/lib/i18n/magazine-flow-ui";
+import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 
 type Item = { id: string; text: string; meta?: string };
 
@@ -18,7 +18,7 @@ type Props = {
 
 /** Backlinks for the selected node: the answers behind a word, or the words inside an answer. */
 export function FocusDetail({ graph, selectedId, describe, heading, onSelect, renderAction }: Props) {
-  const ui = getMagazineFlowUi();
+  const ui = useMagazineFlowUi();
   const node = selectedId ? graph.nodes.find((n) => n.id === selectedId) : null;
   if (!node) return null;
 

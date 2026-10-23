@@ -24,18 +24,31 @@ export function buildSessionJson(params: {
 }): string {
   return JSON.stringify(
     {
-      version: 2,
+      version: 3,
+      timing: { unit: "milliseconds", origin: "recording-start", slateMeaning: "sync-beep-onset", precision: "utterance-estimate; review against audio before publishing" },
       exportedAt: new Date().toISOString(),
       prepare: params.prepare,
       sessionStartedAt: params.sessionStartedAt,
       slateAtMs: params.slateAtMs,
-      transcript: params.transcript,
+      transcript: activeTranscript(params.transcript),
       draft: params.draft,
       hasPhoto: Boolean(params.photoUrl),
     },
     null,
     2,
   );
+}
+
+export function buildEditCsv(transcript: TranscriptEntry[], relativeToMs = 0): string {
+  const cell = (value: string | number) => {
+    const text = String(value);
+    const safe = /^[=+@\-\t\r]/.test(text) ? `'${text}` : text;
+    return `"${safe.replaceAll('"', '""')}"`;
+  };
+  return "\uFEFF" + [
+    ["id", "speaker", "start_ms", "end_ms", "text"],
+    ...activeTranscript(transcript).map((row) => [row.id, row.speaker, Math.max(0, Math.round(row.startedAt - relativeToMs)), Math.max(0, Math.round(row.endedAt - relativeToMs)), row.text]),
+  ].map((row) => row.map(cell).join(",")).join("\r\n");
 }
 
 export function buildSrt(

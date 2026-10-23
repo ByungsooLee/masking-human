@@ -1,8 +1,9 @@
 "use client";
 
+import { useUiTranslator } from "@/hooks/use-ui-translator";
+
 import type { ExportAspect, MagazineDraft, MagazineLayoutKind, PrepareState } from "@/lib/magazine-flow/types";
-import { getMagazineFlowUi } from "@/lib/i18n/magazine-flow-ui";
-import { HeroQuote } from "@/themes/magazine/hero-quote";
+import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 
 type Props = {
   draft: MagazineDraft;
@@ -24,14 +25,16 @@ export function Masthead({
   prepare: Pick<PrepareState, "guestName" | "place">;
   date: string;
 }) {
-  const ui = getMagazineFlowUi();
+  const t = useUiTranslator();
+  const ui = useMagazineFlowUi();
   return (
-    <div className="mag-caption flex items-baseline justify-between gap-[1.5em] text-[color:var(--color-ink-muted)]">
+    <div className="mag-masthead mag-caption flex flex-wrap items-baseline justify-between gap-[1.5em] text-[color:var(--color-ink-muted)]">
       <span className="text-[color:var(--color-plum)]">{ui.appName}</span>
-      <span className="flex gap-[1.2em]">
+      <span className="flex flex-wrap gap-[1.2em]">
         {prepare.guestName ? <span>{prepare.guestName}</span> : null}
         {prepare.place ? <span>{prepare.place}</span> : null}
         <span>{date}</span>
+        <span>{t("収録インタビュー")}</span>
       </span>
     </div>
   );
@@ -49,11 +52,11 @@ function QaList({
   let pairs = skipHero ? draft.qa.filter((pair) => pair.answer.text !== draft.heroQuote.text) : draft.qa;
   if (maxPairs != null) pairs = pairs.slice(0, maxPairs);
   return (
-    <div className="flex flex-col gap-[var(--mag-gap)]">
+    <div className="mag-qa-list">
       {pairs.map((pair) => (
-        <div key={pair.questionUtteranceId + pair.answer.utteranceId} className="flex flex-col gap-[0.4em]">
-          <p className="mag-caption text-[color:var(--color-plum)]">{pair.questionText}</p>
-          <p className="mag-body text-[color:var(--color-ink)]">{pair.answer.text}</p>
+        <div key={pair.questionUtteranceId + pair.answer.utteranceId} className="mag-qa-pair">
+          <p className="mag-question"><span aria-hidden="true">Q.</span> {pair.questionText}</p>
+          <p className="mag-answer mag-body">{pair.answer.text}</p>
         </div>
       ))}
     </div>
@@ -63,24 +66,44 @@ function QaList({
 function TitleBlock({ draft }: { draft: MagazineDraft }) {
   return (
     <div className="flex flex-col gap-[0.6em]">
-      <p className="mag-voice mag-body text-[color:var(--color-ink)]">{draft.title}</p>
+      <h2 className="mag-title">{draft.title}</h2>
       <p className="mag-caption text-[color:var(--color-ink-muted)]">{draft.lead}</p>
     </div>
   );
 }
 
+function EditorialQuote({ text, exportAspect }: { text: string; exportAspect: ExportAspect }) {
+  const cap = exportAspect === "16:9" ? 3.2 : 5;
+  const fontSize = Math.max(2.2, Math.min(cap, 32 / Math.sqrt(Math.max(1, text.length))));
+  return <blockquote className="mag-pullquote" style={{ fontSize: `${fontSize}cqw` }}>
+    <span className="mag-quote-mark" aria-hidden="true">“</span>
+    <p>{text}</p>
+    <span className="mag-quote-close" aria-hidden="true">”</span>
+  </blockquote>;
+}
+
 export function MagazineLayoutBody({ draft, prepare, layout, exportAspect, date }: Props) {
-  if (layout === "spread" && exportAspect === "16:9") {
+  if (layout === "quote-led") {
+    return <div className="flex h-full min-h-0 flex-1 flex-col justify-between gap-[var(--mag-gap)] p-[var(--mag-pad)]">
+      <Masthead prepare={prepare} date={date} />
+      <TitleBlock draft={draft} />
+      <div className="flex min-h-0 flex-1 items-center py-[var(--mag-pad)]">
+        <EditorialQuote text={draft.heroQuote.text} exportAspect={exportAspect} />
+      </div>
+      <p className="mag-caption text-[color:var(--color-ink-muted)]">{prepare.guestName || "Anonymous"}</p>
+    </div>;
+  }
+  if (layout === "spread") {
     return (
       <div className="flex h-full min-h-0 flex-1 flex-col gap-[var(--mag-gap)] p-[var(--mag-pad)]">
         <Masthead prepare={prepare} date={date} />
-        <div className="flex min-h-0 flex-1 flex-row-reverse gap-[calc(var(--mag-pad)*1.4)]">
-          <div className="flex min-h-0 w-[44%] items-center justify-center">
-            <HeroQuote text={draft.heroQuote.text} aspect={exportAspect} />
+        <div className={`flex min-h-0 flex-1 gap-[calc(var(--mag-pad)*1.4)] ${exportAspect === "16:9" ? "flex-row-reverse" : "flex-col"}`}>
+          <div className={`flex min-h-0 items-center justify-center ${exportAspect === "16:9" ? "w-[44%]" : "flex-1"}`}>
+            <EditorialQuote text={draft.heroQuote.text} exportAspect={exportAspect} />
           </div>
           <div className="flex min-w-0 flex-1 flex-col justify-end gap-[calc(var(--mag-gap)*1.4)] overflow-hidden">
             <TitleBlock draft={draft} />
-            <div className="mag-sheet rounded-[1.2cqw] bg-[color:var(--color-milk)] p-[var(--mag-pad)]">
+            <div className="mag-sheet pt-[var(--mag-gap)]">
               <QaList draft={draft} maxPairs={3} />
             </div>
           </div>
@@ -92,16 +115,14 @@ export function MagazineLayoutBody({ draft, prepare, layout, exportAspect, date 
   const qaCap = exportAspect === "9:16" ? 3 : 2;
 
   return (
-    <div className="grid h-full min-h-0 flex-1 grid-rows-[auto_minmax(0,1.05fr)_minmax(0,1.2fr)] gap-[var(--mag-gap)] p-[var(--mag-pad)]">
+    <div className="grid h-full min-h-0 flex-1 grid-rows-[auto_auto_minmax(0,0.9fr)_minmax(0,1.2fr)] gap-[var(--mag-gap)] p-[var(--mag-pad)]">
       <Masthead prepare={prepare} date={date} />
-      <div className="flex min-h-0 flex-row-reverse items-center gap-[var(--mag-pad)]">
-        <HeroQuote text={draft.heroQuote.text} aspect={exportAspect} />
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-center overflow-hidden">
-          <TitleBlock draft={draft} />
-        </div>
+      <TitleBlock draft={draft} />
+      <div className="flex min-h-0 items-center">
+        <EditorialQuote text={draft.heroQuote.text} exportAspect={exportAspect} />
       </div>
-      <div className="mag-sheet min-h-0 overflow-hidden rounded-[2cqw] bg-[color:var(--color-milk)] p-[var(--mag-pad)]">
-        <QaList draft={draft} skipHero={layout === "quote-led"} maxPairs={qaCap} />
+      <div className="mag-sheet min-h-0 overflow-hidden pt-[var(--mag-gap)]">
+        <QaList draft={draft} maxPairs={qaCap} />
       </div>
     </div>
   );

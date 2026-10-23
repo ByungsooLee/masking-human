@@ -3,18 +3,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ThoughtGraph } from "@/components/graph/thought-graph";
 import { buildConversationGraph } from "@/lib/graph/build-conversation-graph";
-import { getMagazineFlowUi } from "@/lib/i18n/magazine-flow-ui";
+import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 import { getMockConversationDurationMs } from "@/lib/realtime/mock-conversation";
 import { useRecordingSession } from "@/contexts/recording-session-context";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
+import { exposureLabel } from "@/lib/consent/release";
 
 type Props = { mockOnly: boolean };
 
 const LINE_GAP_MS = 380;
 
 export function PhaseSlate({ mockOnly }: Props) {
-  const ui = getMagazineFlowUi();
+  const ui = useMagazineFlowUi();
   const prepare = useMagazineFlowStore((s) => s.prepare);
+  const release = useMagazineFlowStore((s) => s.releaseConsent);
   const setPhase = useMagazineFlowStore((s) => s.setPhase);
   const setRecordingSlateAtMs = useMagazineFlowStore((s) => s.setRecordingSlateAtMs);
   const recorder = useRecordingSession();
@@ -51,16 +53,17 @@ export function PhaseSlate({ mockOnly }: Props) {
           setBlocked(ui.slateRecordingFailed);
           return;
         }
-        setRecordingSlateAtMs(recorder.slateAtMs ?? recorder.clock.elapsedMs());
+        setRecordingSlateAtMs(recorder.getSlateAtMs() ?? 0);
       }
       setFlash(true);
       await wait(450);
       setPhase("conversation");
     })();
-  }, [mockOnly, prepare.includeCamera, recorder, setPhase, setRecordingSlateAtMs]);
+  }, [mockOnly, prepare.includeCamera, recorder, setPhase, setRecordingSlateAtMs, ui.slateRecordingFailed]);
 
   return (
     <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col items-center justify-center gap-6 px-[var(--space-page-x)] py-[var(--space-page-y)]">
+      {release && <p className="max-w-lg break-all text-center">{exposureLabel(release.record.exposure, prepare.language === "en")}<br />{prepare.language === "en" ? "Video ID: " : "撮影ID："}{release.record.videoId}</p>}
       <div className="h-[min(46vh,22rem)] w-[min(86vw,28rem)]">
         <ThoughtGraph graph={graph} mode="boot" className="h-full w-full" />
       </div>

@@ -82,6 +82,17 @@ export function sumTodayEstimatedUsd(now = new Date()): number {
   return sum;
 }
 
+export function sumMonthEstimatedUsd(now = new Date()): number {
+  const month = now.toISOString().slice(0, 7);
+  let total = 0;
+  for (const session of sessions.values()) {
+    if (!session.isMock && new Date(session.startedAt).toISOString().slice(0, 7) === month) {
+      total += session.estimatedUsd ?? 0;
+    }
+  }
+  return total;
+}
+
 export function dailyTotalsLastDays(days: number, now = new Date()): { date: string; estimatedUsd: number }[] {
   const out: { date: string; estimatedUsd: number }[] = [];
   for (let i = days - 1; i >= 0; i--) {

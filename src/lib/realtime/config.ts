@@ -4,7 +4,7 @@ export const DEFAULT_REALTIME_MODEL = "gpt-realtime-2.1";
 export const DEFAULT_REALTIME_VOICE = "marin";
 
 /** Wall-clock limit for one live or mock session. */
-export const REALTIME_SESSION_DURATION_MS = 3 * 60 * 1000;
+export const REALTIME_SESSION_DURATION_MS = 10 * 60 * 1000;
 
 export function getRealtimeModel(): string {
   return process.env.OPENAI_REALTIME_MODEL?.trim() || DEFAULT_REALTIME_MODEL;

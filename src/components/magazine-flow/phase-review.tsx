@@ -5,8 +5,8 @@ import { FacetChips } from "@/components/graph/facet-chips";
 import { FocusDetail } from "@/components/graph/focus-detail";
 import { ThoughtGraph } from "@/components/graph/thought-graph";
 import { buildConversationGraph } from "@/lib/graph/build-conversation-graph";
-import { getMagazineFlowUi } from "@/lib/i18n/magazine-flow-ui";
-import { resolveMagazineDraft } from "@/lib/magazine-flow/build-draft-from-transcript";
+import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
+import { buildDraftFromTranscript } from "@/lib/magazine-flow/build-draft-from-transcript";
 import { useRecordingSession } from "@/contexts/recording-session-context";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { activeTranscript } from "@/lib/magazine-flow/validate-guest-text";
@@ -17,7 +17,7 @@ function formatTime(ms: number): string {
 }
 
 export function PhaseReview() {
-  const ui = getMagazineFlowUi();
+  const ui = useMagazineFlowUi();
   const transcript = useMagazineFlowStore((s) => s.transcript);
   const prepare = useMagazineFlowStore((s) => s.prepare);
   const updateTranscriptEntry = useMagazineFlowStore((s) => s.updateTranscriptEntry);
@@ -66,18 +66,15 @@ export function PhaseReview() {
   const buildPage = async () => {
     setBusy(true);
     setError(null);
-    const draft = await resolveMagazineDraft({ transcript, prepare });
+    const draft = buildDraftFromTranscript(transcript, prepare);
     setBusy(false);
-    if (!draft) {
-      setError(ui.buildPageFailed);
-      return;
-    }
     setDraft(draft);
     setPhase("magazine");
   };
 
   return (
     <div className="mx-auto max-w-[72rem] px-[var(--space-page-x)] py-[var(--space-page-y)]">
+      <p className="mb-4">{prepare.language === "ja" ? "ステップ1 / 3 — 含めたくない発言を選ぶ" : "Step 1 / 3 — Choose statements to exclude"}</p>
       <h1 className="ui-heading mb-[var(--space-block)]">{ui.reviewHeading}</h1>
       {recorder.blobUrl ? (
         <audio ref={audioRef} src={recorder.blobUrl} controls className="mb-6 w-full max-w-md" />
@@ -85,7 +82,10 @@ export function PhaseReview() {
         <p className="mb-6 text-[length:var(--text-body)] text-[color:var(--color-ink-muted)]">{ui.noRecording}</p>
       )}
 
-      <section className="mb-[var(--space-block)] flex flex-col gap-4 text-[length:var(--text-body)]">
+      <p className="mb-6">{prepare.language === "ja" ? "文字起こしを確認してから、下の「分析結果を確認する」へ進んでください。発言は修正・除外できます。" : "Check the transcript, then continue to review your findings. You can correct or exclude statements."}</p>
+      <details className="mb-[var(--space-block)]">
+        <summary className="cursor-pointer">{prepare.language === "ja" ? "発言同士のつながりを見る" : "Explore conversation connections"}</summary>
+      <section className="mt-4 flex flex-col gap-4 text-[length:var(--text-body)]">
         <div className="flex flex-col gap-1">
           <h2 className="text-[color:var(--color-ink)]">{ui.mapHeading}</h2>
           <p className="text-[color:var(--color-ink-muted)]">{ui.mapHint}</p>
@@ -126,9 +126,10 @@ export function PhaseReview() {
           </div>
         </div>
       </section>
+      </details>
 
       <ul className="ui-thread flex max-w-[var(--content-max)] flex-col gap-3 text-[length:var(--text-body)]">
-        {rows.map((u) => (
+        {transcript.map((u) => (
           <li
             key={u.id}
             data-active={related ? related.has(u.id) : activeId === u.id}
@@ -166,6 +167,19 @@ export function PhaseReview() {
             ) : (
               <p className="mb-1 text-[color:var(--color-ink-muted)]">{u.text}</p>
             )}
+            <div className="my-3 flex flex-wrap gap-4">
+              <label className="flex flex-col gap-1">{prepare.language === "ja" ? "開始（秒・収録先頭から）" : "Start (seconds from recording)"}
+                <input className="ui-field max-w-40" type="number" min="0" step="0.1" value={u.startedAt / 1000}
+                  onChange={(event) => {
+                    const startedAt = Math.max(0, Number(event.target.value) * 1000);
+                    updateTranscriptEntry(u.id, { startedAt, endedAt: Math.max(startedAt + 100, u.endedAt) });
+                  }} />
+              </label>
+              <label className="flex flex-col gap-1">{prepare.language === "ja" ? "終了（秒）" : "End (seconds)"}
+                <input className="ui-field max-w-40" type="number" min={(u.startedAt + 100) / 1000} step="0.1" value={u.endedAt / 1000}
+                  onChange={(event) => updateTranscriptEntry(u.id, { endedAt: Math.max(u.startedAt + 100, Number(event.target.value) * 1000) })} />
+              </label>
+            </div>
             <label className="flex gap-2 text-[color:var(--color-ink-muted)]">
               <input
                 type="checkbox"

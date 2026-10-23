@@ -1,8 +1,25 @@
 import { describe, expect, it, vi } from "vitest";
-import { MOCK_CLIMAX_UTTERANCE_ID, scheduleMockConversation } from "@/lib/realtime/mock-conversation";
+import { getMockConversationDurationMs, MOCK_CLIMAX_UTTERANCE_ID, scheduleMockConversation } from "@/lib/realtime/mock-conversation";
 import { pickFeaturedGuestQuote } from "@/themes/shared/quote-feature";
 
 describe("scheduleMockConversation", () => {
+  it("plays a longer interview through the final keyword without duplicate IDs", () => {
+    vi.useFakeTimers();
+    let transcript: import("@/lib/realtime/types").Utterance[] = [];
+    const onComplete = vi.fn();
+    const cancel = scheduleMockConversation({ onPhase: () => undefined, onUtterances: (rows) => { transcript = rows; }, onComplete });
+    expect(getMockConversationDurationMs()).toBeGreaterThan(180_000);
+    expect(getMockConversationDurationMs()).toBeLessThan(240_000);
+    vi.advanceTimersByTime(getMockConversationDurationMs() - 1);
+    expect(onComplete).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(transcript.filter((row) => row.speaker === "guest")).toHaveLength(18);
+    expect(new Set(transcript.map((row) => row.id)).size).toBe(transcript.length);
+    expect(transcript.some((row) => row.text.includes("ひとことで言うと"))).toBe(true);
+    cancel();
+    vi.useRealTimers();
+  });
   it("ends on the climax guest line and holds the scene", () => {
     vi.useFakeTimers();
     const phases: string[] = [];

@@ -15,15 +15,13 @@ export async function playSlateBeep(ctx: AudioContext, destination: AudioNode): 
   return 300;
 }
 
-export function pickRecorderMimeType(): string | undefined {
+export function pickRecorderMimeType(includeVideo = false): string | undefined {
   if (typeof MediaRecorder === "undefined") return undefined;
-  const candidates = [
+  const candidates = includeVideo ? [
     "video/webm;codecs=vp9,opus",
     "video/webm;codecs=vp8,opus",
     "video/webm",
-    "audio/webm;codecs=opus",
-    "audio/webm",
     "video/mp4",
-  ];
+  ] : ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
   return candidates.find((t) => MediaRecorder.isTypeSupported(t));
 }

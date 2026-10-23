@@ -11,6 +11,9 @@ type RealtimeInterviewState = {
   usageSessionId: string | null;
   sessionEstimatedUsd: number | null;
   mockScriptComplete: boolean;
+  inputState: "idle" | "speaking" | "transcribing" | "failed";
+  inputPendingSince: number | null;
+  setInputState: (state: "idle" | "speaking" | "transcribing" | "failed") => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
   setListeningPhase: (phase: ListeningPhase) => void;
   setUtterances: (utterances: Utterance[]) => void;
@@ -33,6 +36,8 @@ const initialState = {
   usageSessionId: null as string | null,
   sessionEstimatedUsd: null,
   mockScriptComplete: false,
+  inputState: "idle" as const,
+  inputPendingSince: null as number | null,
 };
 
 export const useRealtimeInterviewStore = create<RealtimeInterviewState>((set) => ({
@@ -46,5 +51,6 @@ export const useRealtimeInterviewStore = create<RealtimeInterviewState>((set) =>
   setUsageSessionId: (usageSessionId) => set({ usageSessionId }),
   setSessionEstimatedUsd: (sessionEstimatedUsd) => set({ sessionEstimatedUsd }),
   setMockScriptComplete: (mockScriptComplete) => set({ mockScriptComplete }),
+  setInputState: (inputState) => set({ inputState, inputPendingSince: inputState === "transcribing" ? Date.now() : null }),
   reset: () => set({ ...initialState }),
 }));

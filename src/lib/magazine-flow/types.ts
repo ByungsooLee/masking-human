@@ -14,6 +14,11 @@ export type InterviewLanguage = "ja" | "en";
 
 export type InterviewerAgentId = "default" | "reflective";
 
+export type InterviewerProfile = {
+  age: "young" | "adult" | "senior";
+  gender: "woman" | "man" | "neutral";
+};
+
 export type FlowConsents = {
   aiConversation: boolean;
   photoVideo: boolean;
@@ -26,6 +31,7 @@ export type PrepareState = {
   place: string;
   language: InterviewLanguage;
   agentId: InterviewerAgentId;
+  interviewerProfile?: InterviewerProfile;
   consents: FlowConsents;
   includeCamera: boolean;
 };
@@ -44,6 +50,8 @@ export type QaPair = {
 export type MagazineLayoutKind = "quote-led" | "dialogue" | "spread";
 
 export type MagazineDraft = {
+  layout?: MagazineLayoutKind;
+  edition?: "porcelain" | "ink" | "sage";
   title: string;
   lead: string;
   heroQuote: GuestQuoteRef;

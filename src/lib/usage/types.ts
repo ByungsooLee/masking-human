@@ -38,6 +38,7 @@ export type BudgetStatus = {
 };
 
 export type UsageSummary = BudgetStatus & {
+  spendAlert: import("./spend-alert").SpendAlert;
   currentSessionEstimatedUsd: number | null;
   costsNote: string;
 };

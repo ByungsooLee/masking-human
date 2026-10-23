@@ -1,17 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { getLiveUiCopy, resolveLiveUiLocale } from "@/lib/i18n/live-ui";
+import { getLiveUiCopy } from "@/lib/i18n/live-ui";
 import { scheduleMockConversation } from "@/lib/realtime/mock-conversation";
 
-export type MockStartOptions = { sessionOffsetMs?: number };
+export type MockStartOptions = { sessionOffsetMs?: number; language?: "ja" | "en" };
 import { patchUsageSession } from "@/lib/usage/client-session-sync";
 import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 import { useSessionTimeLimit } from "./use-session-time-limit";
 
 export function useMockRealtimeInterview() {
   const cancelTimelineRef = useRef<(() => void) | null>(null);
-  const copyRef = useRef(getLiveUiCopy(resolveLiveUiLocale()));
+  const copyRef = useRef(getLiveUiCopy("ja"));
   const stopRef = useRef<(() => void) | null>(null);
   const usageSessionIdRef = useRef<string | null>(null);
   const usagePatchTokenRef = useRef<string | null>(null);
@@ -59,7 +59,7 @@ export function useMockRealtimeInterview() {
   const start = useCallback(async (options?: MockStartOptions) => {
     if (cancelTimelineRef.current) return;
 
-    copyRef.current = getLiveUiCopy(resolveLiveUiLocale());
+    copyRef.current = getLiveUiCopy(options?.language ?? "ja");
     setError(null);
     setIsMockSession(true);
     setConnectionStatus("connecting");
@@ -96,6 +96,7 @@ export function useMockRealtimeInterview() {
       },
       [],
       options?.sessionOffsetMs ?? 0,
+      options?.language ?? "ja",
     );
   }, [
     arm,

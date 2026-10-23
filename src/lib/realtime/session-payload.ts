@@ -1,5 +1,5 @@
 /** Client-safe RealtimeSession config (aligned with server session). */
-export function buildRealtimeSessionConfig() {
+export function buildRealtimeSessionConfig(language: "ja" | "en" = "ja") {
   return {
     outputModalities: ["audio"] as ("text" | "audio")[],
     audio: {
@@ -7,7 +7,7 @@ export function buildRealtimeSessionConfig() {
         transcription: {
           model: "gpt-live-transcribe" as const,
           delay: "low" as const,
-          languages: ["ja", "en"],
+          ...(language === "ja" ? { languages: ["ja"] } : {}),
         },
       },
     },

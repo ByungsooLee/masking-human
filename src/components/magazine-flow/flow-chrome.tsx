@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { useUiTranslator } from "@/hooks/use-ui-translator";
+
+import { PrimaryNavigation } from "@/components/primary-navigation";
 import { SessionCostBadge } from "@/components/usage/session-cost-badge";
-import { getMagazineFlowUi } from "@/lib/i18n/magazine-flow-ui";
+import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 import type { MagazineFlowPhase } from "@/lib/magazine-flow/types";
 
 type Props = {
@@ -12,6 +14,7 @@ type Props = {
   sessionEstimatedUsd: number | null;
   pricingConfigured: boolean;
   showCost: boolean;
+  mockOnly?: boolean;
 };
 
 export function FlowChrome({
@@ -21,23 +24,25 @@ export function FlowChrome({
   sessionEstimatedUsd,
   pricingConfigured,
   showCost,
+  mockOnly = false,
 }: Props) {
-  const ui = getMagazineFlowUi();
+  const t = useUiTranslator();
+  const ui = useMagazineFlowUi();
   return (
     <header className="recording-exclude shrink-0 border-b border-[color:var(--color-thread)] bg-[rgb(255_255_255/0.8)] px-[var(--space-page-x)] py-3">
-      <nav className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-4 text-[length:var(--text-body)]">
-        <div className="flex flex-wrap items-center gap-6">
-          <Link href="/live" className="font-medium text-[color:var(--color-rose)]">
-            {ui.appName}
-          </Link>
-          <Link href="/live/archive" className="text-[color:var(--color-ink-muted)]">
-            {ui.archiveLink}
-          </Link>
-          <Link href="/usage" className="text-[color:var(--color-ink-muted)]">
-            {ui.usageLink}
-          </Link>
-        </div>
+      <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-4 text-[length:var(--text-body)]">
+        <PrimaryNavigation confirmLeave={phase !== "prepare"} />
         <div className="flex items-center gap-3">
+          {phase !== "prepare" && <a
+            href={mockOnly ? "/live?mock=1" : "/live"}
+            className="ui-btn-sub inline-flex items-center"
+            onClick={(event) => {
+              const message = phase === "conversation" || phase === "slate"
+                ? t("会話・録音を終了して開始画面に戻ります。未保存の内容は失われます。戻りますか？")
+                : t("開始画面に戻ると、未保存の録音・編集内容は失われます。保存済みの履歴は残ります。戻りますか？");
+              if (!window.confirm(message)) event.preventDefault();
+            }}
+          >{t("開始画面に戻る")}</a>}
           {showCost && (
             <SessionCostBadge
               inline
@@ -51,7 +56,7 @@ export function FlowChrome({
             </button>
           )}
         </div>
-      </nav>
+      </div>
     </header>
   );
 }

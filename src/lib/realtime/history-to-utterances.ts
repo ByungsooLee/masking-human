@@ -57,8 +57,6 @@ export function historyToUtterances(
     if (!times) {
       times = { startedAt: t, endedAt: t };
       timing.set(id, times);
-    } else {
-      times.endedAt = t;
     }
 
     utterances.push({

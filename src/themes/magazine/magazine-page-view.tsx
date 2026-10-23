@@ -29,13 +29,14 @@ export function MagazinePageView({
 }: Props) {
   const reduceMotion = useReducedMotion();
   const date = new Date().toISOString().slice(0, 10);
-  const layout = layoutOverride ?? pickMagazineLayout(draft, exportAspect);
+  const layout = layoutOverride ?? draft.layout ?? pickMagazineLayout(draft, exportAspect);
 
   const body = (
     <div
       id={exportRootId}
       data-theme="magazine"
       data-aspect={exportAspect}
+      data-edition={draft.edition ?? "porcelain"}
       className="mag-page flex w-full flex-col overflow-hidden"
       style={{ aspectRatio: aspectRatioCss(exportAspect) }}
     >

@@ -38,7 +38,10 @@ export function applyTimingFromTransportEvent(
     const id = itemId ?? (typeof payload.item === "object" && payload.item && "id" in payload.item
       ? String((payload.item as { id?: string }).id)
       : null);
-    if (id) timing.set(id, { startedAt: elapsedMs, endedAt: elapsedMs });
+    if (id) {
+      aiSpeechItemId = id;
+      timing.set(id, { startedAt: elapsedMs, endedAt: elapsedMs });
+    }
   }
 }
 
@@ -49,7 +52,7 @@ export function markAiAudioStart(timing: UtteranceTimingState, elapsedMs: number
   aiSpeechItemId = id;
   const row = timing.get(id);
   if (!row) timing.set(id, { startedAt: elapsedMs, endedAt: elapsedMs });
-  else row.startedAt = Math.min(row.startedAt, elapsedMs);
+  else row.startedAt = elapsedMs;
 }
 
 export function markAiAudioStop(timing: UtteranceTimingState, elapsedMs: number): void {

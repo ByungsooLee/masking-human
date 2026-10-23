@@ -8,18 +8,22 @@ export function useSessionTimeLimit(onExpire: () => void) {
   const sessionEndsAt = useRealtimeInterviewStore((s) => s.sessionEndsAt);
   const setSessionEndsAt = useRealtimeInterviewStore((s) => s.setSessionEndsAt);
   const expireRef = useRef(onExpire);
-  expireRef.current = onExpire;
+  const ownsTimerRef = useRef(false);
+  useEffect(() => { expireRef.current = onExpire; }, [onExpire]);
 
   const arm = useCallback(() => {
+    ownsTimerRef.current = true;
     setSessionEndsAt(Date.now() + REALTIME_SESSION_DURATION_MS);
   }, [setSessionEndsAt]);
 
   const disarm = useCallback(() => {
+    if (!ownsTimerRef.current) return;
+    ownsTimerRef.current = false;
     setSessionEndsAt(null);
   }, [setSessionEndsAt]);
 
   useEffect(() => {
-    if (sessionEndsAt === null) return;
+    if (!ownsTimerRef.current || sessionEndsAt === null) return;
 
     const msLeft = sessionEndsAt - Date.now();
     if (msLeft <= 0) {

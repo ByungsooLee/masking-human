@@ -3,28 +3,21 @@ import path from "path";
 import { safeErrorMessage } from "@/lib/logging/safe-log";
 import type { InterviewerAgentId } from "@/lib/magazine-flow/types";
 
-const cache = new Map<string, string>();
-
 const FALLBACK =
-  "You are a gentle interviewer about daily skin care and memories. Speak in the guest's language.";
+  "You are a warm interviewer. Use an everyday item only as an opening, then follow the guest's own words into daily life, choices, memories and meaningful experiences. Do not force the conversation back to cosmetics. Briefly acknowledge what they actually said and ask only one short question per turn. Do not invent feelings, relationships or life history. Speak in the language required by the session policy.";
 
 export function loadInterviewerPrompt(agentId: InterviewerAgentId = "default"): string {
-  const key = agentId;
-  const hit = cache.get(key);
-  if (hit) return hit;
-
   const fileName = agentId === "reflective" ? "reflective.md" : "default.md";
   try {
     const filePath = path.join(process.cwd(), "prompts", "interviewers", fileName);
-    const text = readFileSync(filePath, "utf8").trim();
-    cache.set(key, text);
+    const base = readFileSync(path.join(process.cwd(), "prompts", "interviewer.md"), "utf8").trim();
+    const text = `${base}\n\n${readFileSync(filePath, "utf8").trim()}`;
     return text;
   } catch (err) {
     console.error("[loadInterviewerPrompt]", safeErrorMessage(err));
     try {
       const legacy = path.join(process.cwd(), "prompts", "interviewer.md");
       const text = readFileSync(legacy, "utf8").trim();
-      cache.set(key, text);
       return text;
     } catch {
       return FALLBACK;

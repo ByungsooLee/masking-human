@@ -12,15 +12,15 @@ function pickHero(guests: TranscriptEntry[]): TranscriptEntry {
   return guests.reduce((best, g) => (g.text.length > best.text.length ? g : best), guests[0]!);
 }
 
-function buildTitle(prepare: Pick<PrepareState, "guestName" | "place">, heroText: string): string {
+function buildTitle(prepare: Pick<PrepareState, "guestName" | "place" | "language">, heroText: string): string {
   if (prepare.guestName.trim()) return prepare.guestName.trim();
   const parts = heroText
     .split(/[。．.!！?？\n]/)
     .map((s) => s.trim())
     .filter(Boolean);
   const headline = parts.find((s) => s.length >= 8) ?? parts[0] ?? heroText.trim();
-  if (headline.length >= 4) return headline.slice(0, 22);
-  if (prepare.place.trim()) return `${prepare.place.trim()}の手入れ`;
+  if (headline.length >= 4) return headline.length > 28 ? `${headline.slice(0, 28)}…` : headline;
+  if (prepare.place.trim()) return prepare.language === "en" ? `Care in ${prepare.place.trim()}` : `${prepare.place.trim()}の手入れ`;
   return heroText.trim().slice(0, 24);
 }
 

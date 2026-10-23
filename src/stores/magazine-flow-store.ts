@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { SignedRelease } from "@/lib/consent/release";
 import type {
   ExportAspect,
   MagazineDraft,
@@ -14,6 +15,7 @@ const defaultPrepare: PrepareState = {
   place: "",
   language: "ja",
   agentId: "default",
+  interviewerProfile: { age: "adult", gender: "neutral" },
   includeCamera: false,
   consents: {
     aiConversation: false,
@@ -32,6 +34,7 @@ function loadPrepareDefaults(): PrepareState {
     return {
       ...defaultPrepare,
       ...parsed,
+      includeCamera: false,
       consents: { ...defaultPrepare.consents, ...parsed.consents },
     };
   } catch {
@@ -42,6 +45,8 @@ function loadPrepareDefaults(): PrepareState {
 type MagazineFlowState = {
   phase: MagazineFlowPhase;
   prepare: PrepareState;
+  prepareDefaultsLoaded: boolean;
+  restorePrepareDefaults: () => void;
   transcript: TranscriptEntry[];
   photoUrl: string | null;
   draft: MagazineDraft | null;
@@ -49,6 +54,11 @@ type MagazineFlowState = {
   publishConsentConfirmed: boolean;
   sessionStartedAt: number | null;
   recordingSlateAtMs: number | null;
+  archiveId: string | null;
+  releaseConsent: SignedRelease | null;
+  setReleaseConsent: (release: SignedRelease | null) => void;
+  analysisFeedback: Record<string, string>;
+  setAnalysisFeedback: (key: string, answer: string) => void;
   setPhase: (phase: MagazineFlowPhase) => void;
   setPrepare: (patch: Partial<PrepareState>) => void;
   persistPrepare: () => void;
@@ -66,7 +76,12 @@ type MagazineFlowState = {
 
 export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
   phase: "prepare",
-  prepare: loadPrepareDefaults(),
+  prepare: defaultPrepare,
+  prepareDefaultsLoaded: false,
+  restorePrepareDefaults: () => {
+    if (get().prepareDefaultsLoaded) return;
+    set({ prepare: loadPrepareDefaults(), prepareDefaultsLoaded: true });
+  },
   transcript: [],
   photoUrl: null,
   draft: null,
@@ -74,6 +89,11 @@ export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
   publishConsentConfirmed: false,
   sessionStartedAt: null,
   recordingSlateAtMs: null,
+  archiveId: null,
+  releaseConsent: null,
+  setReleaseConsent: (releaseConsent) => set({ releaseConsent, archiveId: releaseConsent?.record.videoId ?? get().archiveId }),
+  analysisFeedback: {},
+  setAnalysisFeedback: (key, answer) => set({ analysisFeedback: { ...get().analysisFeedback, [key]: answer } }),
   setPhase: (phase) => set({ phase }),
   setPrepare: (patch) => set({ prepare: { ...get().prepare, ...patch } }),
   persistPrepare: () => {
@@ -85,6 +105,7 @@ export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
         place: prepare.place,
         language: prepare.language,
         agentId: prepare.agentId,
+        interviewerProfile: prepare.interviewerProfile,
         includeCamera: prepare.includeCamera,
       }),
     );
@@ -99,7 +120,7 @@ export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
   setExportAspect: (exportAspect) => set({ exportAspect }),
   setPublishConsentConfirmed: (publishConsentConfirmed) => set({ publishConsentConfirmed }),
   setRecordingSlateAtMs: (recordingSlateAtMs) => set({ recordingSlateAtMs }),
-  markSessionStart: () => set({ sessionStartedAt: Date.now() }),
+  markSessionStart: () => set({ sessionStartedAt: Date.now(), archiveId: get().releaseConsent?.record.videoId ?? crypto.randomUUID(), analysisFeedback: {} }),
   resetFlow: () =>
     set({
       phase: "prepare",
@@ -111,6 +132,9 @@ export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
       publishConsentConfirmed: false,
       sessionStartedAt: null,
       recordingSlateAtMs: null,
+      archiveId: null,
+      releaseConsent: null,
+      analysisFeedback: {},
     }),
   goBack: () => {
     const { phase } = get();

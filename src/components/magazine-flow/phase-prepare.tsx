@@ -3,35 +3,37 @@
 import { useMemo, useState } from "react";
 import { ThoughtGraph } from "@/components/graph/thought-graph";
 import { buildConversationGraph } from "@/lib/graph/build-conversation-graph";
-import { getMagazineFlowUi } from "@/lib/i18n/magazine-flow-ui";
+import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 import { INTERVIEWER_AGENTS } from "@/lib/realtime/interviewer-agents";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { useLiveConsentSession } from "@/hooks/use-live-consent-session";
 import { useMicLevel } from "@/hooks/use-mic-level";
+import type { InterviewerProfile } from "@/lib/magazine-flow/types";
+import { interviewStartBlockers } from "@/lib/magazine-flow/start-readiness";
 
 type Props = { mockOnly: boolean; onStartDemo: () => void };
 
 export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
-  const ui = getMagazineFlowUi();
+  const ui = useMagazineFlowUi();
   const prepare = useMagazineFlowStore((s) => s.prepare);
   const setPrepare = useMagazineFlowStore((s) => s.setPrepare);
   const persistPrepare = useMagazineFlowStore((s) => s.persistPrepare);
   const setPhase = useMagazineFlowStore((s) => s.setPhase);
   const markSessionStart = useMagazineFlowStore((s) => s.markSessionStart);
+  const setReleaseConsent = useMagazineFlowStore((s) => s.setReleaseConsent);
   const { grantConsents } = useLiveConsentSession();
-  const mic = useMicLevel();
+  const mic = useMicLevel(!mockOnly);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const seedGraph = useMemo(() => buildConversationGraph([], 5), []);
   const micStatus = mic.denied ? ui.micDenied : mic.hearing ? ui.micHearing : ui.micQuiet;
 
-  const canStart =
-    prepare.consents.aiConversation &&
-    prepare.consents.recording &&
-    prepare.place.trim().length > 0;
+  const startBlockers = interviewStartBlockers(prepare);
+  const canStart = startBlockers.length === 0;
 
   const onStart = async () => {
+    if (!canStart || busy) return;
     setBusy(true);
     setError(null);
     const ok = await grantConsents({
@@ -52,6 +54,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
   };
 
   const onDemo = () => {
+    setReleaseConsent(null);
     if (!prepare.place.trim()) setPrepare({ place: ui.demoPlace });
     onStartDemo();
     markSessionStart();
@@ -117,7 +120,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
               {ui.language}
               <select
                 value={prepare.language}
-                onChange={(e) => setPrepare({ language: e.target.value as "ja" | "en" })}
+                onChange={(e) => { setPrepare({ language: e.target.value as "ja" | "en" }); persistPrepare(); }}
                 className="ui-field"
               >
                 <option value="ja">{ui.languageJa}</option>
@@ -139,15 +142,36 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
               </select>
             </label>
           </div>
+          {prepare.language === "en" && <p className="text-sm text-[color:var(--color-ink-muted)]">The interface stays in English. If your first full answer is in another language, such as Korean or Chinese, the interviewer will continue in that language. Greetings or names alone do not trigger a switch.</p>}
+          <fieldset className="grid gap-4 sm:grid-cols-2">
+            <legend className="mb-2">{prepare.language === "ja" ? "聞き手の雰囲気" : "Interviewer persona"}</legend>
+            <label className="flex flex-col gap-1">
+              {prepare.language === "ja" ? "年代" : "Age"}
+              <select className="ui-field" value={prepare.interviewerProfile?.age ?? "adult"}
+                onChange={(event) => setPrepare({ interviewerProfile: { gender: prepare.interviewerProfile?.gender ?? "neutral", age: event.target.value as InterviewerProfile["age"] } })}>
+                <option value="young">{prepare.language === "ja" ? "若い成人・軽やか" : "Young adult / light"}</option>
+                <option value="adult">{prepare.language === "ja" ? "大人・自然体" : "Adult / balanced"}</option>
+                <option value="senior">{prepare.language === "ja" ? "年配・ゆったり" : "Senior / unhurried"}</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1">
+              {prepare.language === "ja" ? "ジェンダー表現" : "Gender expression"}
+              <select className="ui-field" value={prepare.interviewerProfile?.gender ?? "neutral"}
+                onChange={(event) => setPrepare({ interviewerProfile: { age: prepare.interviewerProfile?.age ?? "adult", gender: event.target.value as InterviewerProfile["gender"] } })}>
+                <option value="neutral">{prepare.language === "ja" ? "ニュートラル" : "Neutral"}</option>
+                <option value="woman">{prepare.language === "ja" ? "女性" : "Woman"}</option>
+                <option value="man">{prepare.language === "ja" ? "男性" : "Man"}</option>
+              </select>
+            </label>
+          </fieldset>
           <label className="flex gap-3">
             <input
               type="checkbox"
               checked={prepare.includeCamera}
-              disabled={!prepare.consents.photoVideo}
-              onChange={(e) => setPrepare({ includeCamera: e.target.checked })}
+              onChange={(e) => setPrepare({ includeCamera: e.target.checked, consents: { ...prepare.consents, photoVideo: e.target.checked } })}
             />
-            <span className={prepare.consents.photoVideo ? undefined : "text-[color:var(--color-ink-muted)]"}>
-              {ui.includeCamera}
+            <span>
+              {ui.includeCamera}{prepare.language === "ja" ? "（任意・編集素材として保存）" : " (optional; saved for editing)"}
             </span>
           </label>
         </div>
@@ -157,8 +181,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
             [
               ["aiConversation", ui.consentAiStreet],
               ["recording", ui.consentRecordingStreet],
-              ["photoVideo", ui.consentPhotoStreet],
-              ["snsPublish", ui.consentPublishStreet],
+              ["snsPublish", prepare.language === "en" ? "I understand publication on YouTube / SNS is planned and final scope, commercial use and signature will be confirmed after the interview. Recording is permitted now; no publication without final signed consent." : "YouTube・SNSへの掲載予定を確認しました。記録を許可し、会話後に掲載範囲・商用利用等を確認して最終署名します。署名保存までは公開を許可しません。"],
             ] as const
           ).map(([key, label]) => (
             <li key={key}>
@@ -170,7 +193,6 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
                     const checked = e.target.checked;
                     setPrepare({
                       consents: { ...prepare.consents, [key]: checked },
-                      ...(key === "photoVideo" && !checked ? { includeCamera: false } : {}),
                     });
                   }}
                 />
@@ -180,23 +202,26 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
           ))}
         </ul>
 
+        <p>{prepare.language === "en" ? "Confirm recording angles and privacy preferences with the operator before filming. After the conversation and report review, you will choose the final publication scope and sign. No signed consent means no publication." : "撮影前に画角や映したくない内容を運営者と確認してください。会話と分析結果の確認後、最後に掲載範囲を選んで署名します。署名保存のない素材は公開しません。"}</p>
         {error && <p className="text-[color:var(--color-rose)]">{error}</p>}
+        {!mockOnly && <div id="interview-start-status" role="status" className="space-y-2 leading-loose">
+          {startBlockers.length > 0 ? <><p>{prepare.language === "en" ? "Before you can start:" : "開始するために、次を確認してください。"}</p><ul className="list-disc pl-5">{startBlockers.map((reason) => <li key={reason}>{reason}</li>)}</ul></> : <p>{prepare.language === "en" ? "Ready to start. Press the button below." : "開始できます。下の開始ボタンを押してください。"}</p>}
+        </div>}
         <div className="flex flex-wrap items-center gap-4">
-          <button
+          {!mockOnly && <button
             type="button"
             disabled={!canStart || busy}
+            aria-describedby="interview-start-status"
             onClick={() => void onStart()}
             className="ui-btn"
           >
             {ui.startConversation}
-          </button>
-          {!mockOnly && (
-            <button type="button" onClick={onDemo} className="ui-btn-sub">
+          </button>}
+            <button type="button" onClick={onDemo} className={mockOnly ? "ui-btn" : "ui-btn-sub"}>
               {ui.startDemo}
             </button>
-          )}
         </div>
-        {!mockOnly && <p className="text-[color:var(--color-ink-muted)]">{ui.demoHint}</p>}
+        <p className="text-[color:var(--color-ink-muted)]">{ui.demoHint}</p>
       </section>
     </div>
   );

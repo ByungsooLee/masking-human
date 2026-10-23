@@ -1,13 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { getMagazineFlowUi } from "@/lib/i18n/magazine-flow-ui";
-import { saveArchivedSession } from "@/lib/archive/session-archive";
-import { buildSessionJson, buildSrt, buildYoutubeDescription } from "@/lib/magazine-flow/export-transcript";
+import type { ArchivedSession } from "@/lib/archive/session-archive";
+import { buildEditCsv, buildSessionJson, buildSrt, buildYoutubeDescription } from "@/lib/magazine-flow/export-transcript";
 import { captureElementToPng, downloadDataUrl, downloadText } from "@/lib/magazine-flow/export-png";
 import { EXPORT_PIXELS, type ExportAspect } from "@/lib/magazine-flow/types";
-import { useRecordingSession } from "@/contexts/recording-session-context";
-import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { MagazineCarouselSlide } from "@/themes/magazine/magazine-carousel-slide";
 import { MagazinePageView } from "@/themes/magazine/magazine-page-view";
 
@@ -15,33 +14,33 @@ function ExportFrame({ aspect, children }: { aspect: ExportAspect; children: Rea
   return <div style={{ width: EXPORT_PIXELS[aspect].width }}>{children}</div>;
 }
 
-export function PhasePublish() {
-  const ui = getMagazineFlowUi();
-  const prepare = useMagazineFlowStore((s) => s.prepare);
-  const transcript = useMagazineFlowStore((s) => s.transcript);
-  const draft = useMagazineFlowStore((s) => s.draft);
-  const photoUrl = useMagazineFlowStore((s) => s.photoUrl);
-  const publishConsentConfirmed = useMagazineFlowStore((s) => s.publishConsentConfirmed);
-  const setPublishConsentConfirmed = useMagazineFlowStore((s) => s.setPublishConsentConfirmed);
-  const sessionStartedAt = useMagazineFlowStore((s) => s.sessionStartedAt);
-  const recordingSlateAtMs = useMagazineFlowStore((s) => s.recordingSlateAtMs);
-  const setPrepare = useMagazineFlowStore((s) => s.setPrepare);
-  const recorder = useRecordingSession();
+export function PhasePublish({ session, recordingUrl }: { session: ArchivedSession; recordingUrl: string | null }) {
+  const ui = getMagazineFlowUi(session.prepare.language);
+  const { prepare, transcript } = session;
+  const [draft, setDraft] = useState(session.draft);
+  const photoUrl = null;
+  const sessionStartedAt = session.recordedAt ?? null;
+  const recordingSlateAtMs = session.slateAtMs;
   const exportRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [timeOrigin, setTimeOrigin] = useState<"recording" | "slate">("recording");
+  const [offsetMs, setOffsetMs] = useState(0);
+  const [lastImage, setLastImage] = useState<{ url: string; filename: string; width: number; height: number } | null>(null);
+  const [exportAspect, setExportAspect] = useState<ExportAspect>("4:5");
 
   if (!draft) return null;
 
-  const slateOffset = recordingSlateAtMs ?? 0;
+  const slateOffset = (timeOrigin === "slate" ? recordingSlateAtMs ?? 0 : 0) - offsetMs;
   const carouselQa = draft.qa.slice(0, 3);
 
   const capture = async (rootId: string, aspect: ExportAspect, filename: string) => {
     const root = exportRef.current?.querySelector(`#${rootId}`) as HTMLElement | null;
     if (!root) throw new Error(ui.exportFailed);
     const { width, height } = EXPORT_PIXELS[aspect];
-    downloadDataUrl(filename, await captureElementToPng(root, width, height));
+    const url = await captureElementToPng(root, width, height);
+    setLastImage({ url, filename, width, height });
+    downloadDataUrl(filename, url);
   };
 
   const run = async (task: () => Promise<void>) => {
@@ -68,37 +67,44 @@ export function PhasePublish() {
   const downloadThumb = () => run(() => capture("export-16x9", "16:9", "youtube-thumbnail.png"));
 
   const downloadAudio = () => {
-    if (recorder.blobUrl) downloadDataUrl("interview-audio.webm", recorder.blobUrl);
+    const extension = session.recordingBlob?.type.includes("mp4") ? "mp4" : "webm";
+    if (recordingUrl) downloadDataUrl(`interview-${session.id}.${extension}`, recordingUrl);
   };
 
-  const confirmPublish = async () => {
-    const prepareForArchive = {
-      ...prepare,
-      consents: { ...prepare.consents, snsPublish: publishConsentConfirmed },
-    };
-    setPrepare({ consents: prepareForArchive.consents });
-    await saveArchivedSession({
-      id: crypto.randomUUID(),
-      savedAt: new Date().toISOString(),
-      prepare: prepareForArchive,
-      transcript,
-      draft,
-      slateAtMs: recordingSlateAtMs,
-    });
-    setSaved(true);
-  };
 
   return (
-    <div className="mx-auto max-w-[var(--content-max)] px-[var(--space-page-x)] py-[var(--space-page-y)] text-[length:var(--text-body)]">
-      <h1 className="ui-heading mb-[var(--space-block)]">{ui.publishHeading}</h1>
+    <div className="mx-auto w-full max-w-[72rem] px-[var(--space-page-x)] py-[var(--space-page-y)] text-[length:var(--text-body)]">
+      <h1 className="ui-heading mb-6">{prepare.language === "ja" ? "素材の保存・SNS書き出し" : "Media downloads & social exports"}</h1>
+      <p className="mb-6">{prepare.language === "ja" ? "録音には除外した発言も残っています。公開前に音声・映像を編集し、本人の許可を確認してください。この操作では投稿しません。" : "Recordings still include excluded speech. Edit audio/video and confirm permission before sharing. These controls do not publish anything."}</p>
+      <div className="mb-6 flex flex-wrap gap-4">
+        <label>{prepare.language === "ja" ? "画像比率" : "Image ratio"}<select className="ui-field ml-2" value={exportAspect} onChange={(event) => setExportAspect(event.target.value as ExportAspect)}><option>4:5</option><option>9:16</option><option>16:9</option></select></label>
+        <label>{prepare.language === "ja" ? "誌面の構成" : "Layout"}<select className="ui-field ml-2" value={draft.layout ?? "auto"} onChange={(event) => setDraft({ ...draft, layout: event.target.value === "auto" ? undefined : event.target.value as NonNullable<typeof draft.layout> })}><option value="auto">{prepare.language === "ja" ? "自動" : "Automatic"}</option><option value="quote-led">Statement</option><option value="dialogue">Conversation</option><option value="spread">Spread</option></select></label>
+      </div>
 
       <section className="ui-panel mb-6">
         <h2 className="mb-1 text-[color:var(--color-rose)]">{ui.exportEditBundle}</h2>
         <p className="mb-4 text-[color:var(--color-ink-muted)]">{ui.exportEditHint}</p>
+        <div className="mb-4 flex flex-wrap gap-4">
+          <label className="flex flex-col gap-1">{prepare.language === "ja" ? "字幕の時間基準" : "Subtitle time origin"}
+            <select className="ui-field" value={timeOrigin} onChange={(event) => setTimeOrigin(event.target.value as "recording" | "slate")}>
+              <option value="recording">{prepare.language === "ja" ? "保存音声の先頭" : "Recording start"}</option>
+              <option value="slate">{prepare.language === "ja" ? "同期音の開始（外部カメラ）" : "Sync beep onset (external camera)"}</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">{prepare.language === "ja" ? "字幕をずらす（ミリ秒、＋で遅く）" : "Subtitle shift (ms, + delays)"}
+            <input className="ui-field" type="number" step="100" value={offsetMs} onChange={(event) => setOffsetMs(Number(event.target.value) || 0)} />
+          </label>
+        </div>
+        <p className="mb-4 text-[color:var(--color-ink-muted)]">{prepare.language === "ja" ? "字幕は発話区間からの推定です。保存音声と照合して調整してください。JSONの時刻は常に収録開始基準です。" : "Subtitle timing is estimated from speech intervals. Review against the recording. JSON always uses recording start."}</p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={downloadAudio} disabled={!recorder.blobUrl} className="ui-btn">
+          <button type="button" onClick={downloadAudio} disabled={!recordingUrl} className="ui-btn">
             {ui.downloadAudio}
           </button>
+          <button
+            type="button"
+            className="ui-btn-sub"
+            onClick={() => downloadText("interview-edit.csv", buildEditCsv(transcript, slateOffset), "text/csv;charset=utf-8")}
+          >{prepare.language === "ja" ? "編集用CSV" : "Edit CSV"}</button>
           <button
             type="button"
             onClick={() => downloadText("interview.srt", buildSrt(transcript, prepare.language, { relativeToMs: slateOffset }), "text/plain")}
@@ -122,6 +128,9 @@ export function PhasePublish() {
       </section>
 
       <section className="ui-panel mb-6">
+        <button type="button" disabled={busy} className="ui-btn mb-4" onClick={() => void run(() => capture("export-magazine", exportAspect, "interview-magazine.png"))}>
+          {prepare.language === "ja" ? "選んだ誌面を保存" : "Save selected magazine"}
+        </button>
         <h2 className="mb-1 text-[color:var(--color-rose)]">{ui.exportInstagram}</h2>
         <p className="mb-4 text-[color:var(--color-ink-muted)]">{ui.carouselHint(carouselQa.length + 1)}</p>
         <button type="button" disabled={busy} onClick={() => void downloadCarousel()} className="ui-btn">
@@ -147,21 +156,16 @@ export function PhasePublish() {
         </div>
       </section>
 
-      <label className="flex gap-3">
-        <input type="checkbox" checked={publishConsentConfirmed} onChange={(e) => setPublishConsentConfirmed(e.target.checked)} />
-        <span>{ui.publishConfirm}</span>
-      </label>
-      <button
-        type="button"
-        disabled={!publishConsentConfirmed || saved}
-        onClick={() => void confirmPublish()}
-        className="ui-btn mt-4"
-      >
-        {saved ? ui.savedToArchive : ui.finish}
-      </button>
       {error && <p className="mt-4 text-[color:var(--color-rose)]">{error}</p>}
+      {lastImage && <section className="mt-6 max-w-md">
+        <a href={lastImage.url} download={lastImage.filename} className="ui-btn-sub">{prepare.language === "ja" ? "生成したPNGを保存" : "Save generated PNG"}</a>
+        <Image className="mt-4 h-auto w-full" src={lastImage.url} alt={lastImage.filename} width={lastImage.width} height={lastImage.height} unoptimized />
+      </section>}
 
       <div ref={exportRef} className="pointer-events-none fixed left-[-99999px] top-0 flex flex-col" aria-hidden>
+        <ExportFrame aspect={exportAspect}>
+          <MagazinePageView exportRootId="export-magazine" draft={draft} prepare={prepare} photoUrl={photoUrl} exportAspect={exportAspect} reveal={false} />
+        </ExportFrame>
         <ExportFrame aspect="16:9">
           <MagazinePageView exportRootId="export-16x9" draft={draft} prepare={prepare} photoUrl={photoUrl} exportAspect="16:9" reveal={false} />
         </ExportFrame>
