@@ -66,3 +66,15 @@ History displays entry count, recorded-media sizes and the browser's approximate
 This is device-local storage without additional service fees, not cloud sync or device sharing. Capturing/storing three screen recordings and crash-durable saving during recording are outside this change. The live voice duration remains about ten minutes.
 
 Implementation: [Archive DB](../../../src/lib/archive/session-archive.ts), [Save and next](../../../src/components/magazine-flow/save-and-next.tsx), [Storage display](../../../src/components/live/archive-storage-status.tsx).
+
+## My page and management navigation (added 2026-10-23)
+
+The participant header has two destinations: Interview and My page. Manage history, photo permission and usage from `/mypage`, using `/mypage/history`, `/mypage/photo-consent` and `/mypage/usage`. Old `/live/archive` (including details), `/photo-consent` and `/usage` URLs redirect to the new management routes. IndexedDB names and formats are unchanged; existing history remains available on the same origin.
+
+The overview shows interview count, unsigned interview count, recorded-media size and saved photo-permission count. Failed loads are not presented as zero; offer retry. Stack content vertically on mobile and keep all four management tabs visible. Confirm leaving management menus when a photo signature is unsaved.
+
+Do not show estimated cost in the interview header. Spending alerts and their fetch-error messages appear only within My page. Internal usage recording and budget-based start restrictions remain. Final results link to My page rather than listing management destinations.
+
+At the user's explicit request, this change groups management items without adding passwords or authentication. It does not restrict access for someone who follows the link or knows the URL. Photo explanations/terms and interview questions, analysis and signature rules are unchanged.
+
+Returning from management to Interview starts fresh preparation while preserving saved history. Use the explicit archive resume action to edit an earlier recording; do not reopen old results without their media and overwrite the saved recording.

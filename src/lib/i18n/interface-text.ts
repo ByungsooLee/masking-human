@@ -1,6 +1,7 @@
 import type { LiveUiLocale } from "./live-ui";
 
 const EN: Record<string, string> = {
+  "マイページ": "My page",
   "写真撮影許可": "Photo permission",
   "伝統・継承度": "Tradition & passing on", "安心・安定度": "Calm & security", "他者共感度": "Empathy-related mentions", "自己表現度": "Self-expression", "変革・挑戦度": "Change & exploration",
   "OpenAIの組織全体の今月実績です。反映には遅れがあります。": "Actual spending for your entire OpenAI organization this month. Reporting may be delayed.",

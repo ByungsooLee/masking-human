@@ -47,3 +47,7 @@ D14: Japanese files at the knowledge root are the editorial source; `en/` mainta
 ## Consecutive interview decision: 2026-10-23
 
 D16: To support consecutive participants, use existing IndexedDB and wait for successful persistence before handoff. Previously save failure still proceeded to review; now retain the recording and allow retry. Save unfinished review and resume the same session ID later; clear identity and consent for the next guest. Preserve interview, analysis and publication-consent criteria. This supports free device-local accumulation and consecutive operation. Capacity is approximate; no three-screen-recording capture or cloud DB is added. Test failed saves, write ordering, two consecutive guests and resume. D15 belongs to the separate security-upgrade PR and is not reused here.
+
+## Management navigation decision: 2026-10-23
+
+D17: Move usage, photo permission and history out of the participant header into My page. Replace four header destinations with two; add an overview, management navigation, canonical URLs and legacy redirects. Limit cost displays/alerts to management screens. The user explicitly answered that grouping management items is sufficient, so no password protection or authentication is implemented. This does not establish access-control separation. Preserve existing DBs, consent content, recording and analysis specifications; test Japanese/English, mobile, old URLs and consecutive interviews.

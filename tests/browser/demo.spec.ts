@@ -65,8 +65,13 @@ for (const language of ["ja", "en"] as const) {
     await expect(page.getByText(en ? "Demo: no real signature is collected." : "デモでは実際の署名を収集しません。", { exact: true })).toBeVisible();
     await expect(page.locator("canvas")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /ZIP|SRT|CSV/ })).toHaveCount(0);
-    await page.getByRole("link", { name: en ? "Open interview history" : "過去の履歴を見る", exact: true }).click();
-    await page.locator('a[href^="/live/archive/"]').first().click();
+    await page.getByRole("link", { name: en ? "Go to My page" : "マイページへ", exact: true }).click();
+    // Returning from management must start a fresh session, never overwrite the saved recording.
+    await page.getByRole("link", { name: en ? "Prepare an interview" : "インタビューの準備へ", exact: true }).click();
+    await expect(page.getByRole("button", { name: en ? "Try the demo conversation" : "デモの会話で試す", exact: true })).toBeVisible();
+    await page.getByRole("navigation", { name: en ? "Main navigation" : "メインメニュー" }).getByRole("link", { name: en ? "My page" : "マイページ", exact: true }).click();
+    await page.getByRole("link", { name: en ? "Open interview history" : "履歴を開く", exact: true }).click();
+    await page.locator('a[href^="/mypage/history/"]').first().click();
     await page.getByRole("button", { name: en ? "Media & social exports" : "素材保存・SNS書き出し", exact: true }).click();
     const download = async (name: string) => {
       const pending = page.waitForEvent("download");

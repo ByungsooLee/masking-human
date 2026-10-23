@@ -38,6 +38,6 @@ export function PhaseResults({ mockOnly = false }: { mockOnly?: boolean }) {
       <p>{en ? "Review the recording and exclusions with the operator before signing. Excluding text does not remove it from the original audio or video. Without a saved signature this material must not be published." : "署名前に運営者と録音・映像と除外箇所を確認してください。テキストの除外だけでは原音声・原動画から消えません。署名保存のない素材は公開できません。"}</p>
       {mockOnly ? <p>{en ? "Demo: no real signature is collected." : "デモでは実際の署名を収集しません。"}</p> : state.archiveId && <ReleaseConsent language={state.prepare.language} value={state.releaseConsent} sessionId={state.archiveId} onBusyChange={setConsentBusy} onChange={(release) => { if (useMagazineFlowStore.getState().archiveId === state.archiveId) state.setReleaseConsent(release); }} />}
     </section>
-    {saved === entry && <Link className="ui-btn-sub mt-8 inline-block" href="/live/archive">{en ? "Open interview history" : "過去の履歴を見る"}</Link>}
+    {saved === entry && <Link className="ui-btn-sub mt-8 inline-block" href="/mypage">{en ? "Go to My page" : "マイページへ"}</Link>}
   </div>;
 }

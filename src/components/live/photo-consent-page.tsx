@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useMyPageDraftGuard } from "@/contexts/my-page-draft-context";
 import { PrimaryNavigation } from "@/components/primary-navigation";
 import { PhotoSignaturePad } from "./photo-signature-pad";
 import { SIMPLE_PHOTO_USES, PhotoPermissionSchema, photoRetentionLabel, type PhotoPermission } from "@/lib/consent/photo-permission";
@@ -11,7 +12,7 @@ import { bloomFontClassName } from "@/themes/bloom/fonts";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { isDemoOnly } from "@/lib/demo-mode";
 
-export function PhotoConsentPage() {
+export function PhotoConsentPage({ embedded = false }: { embedded?: boolean }) {
   const demoOnly = isDemoOnly();
   const language = useMagazineFlowStore((state) => state.prepare.language);
   const en = language === "en";
@@ -28,6 +29,7 @@ export function PhotoConsentPage() {
   const [signature, setSignature] = useState("");
   const [generation, setGeneration] = useState(0);
   const [release, setRelease] = useState<SignedRelease | null>(null);
+  useMyPageDraftGuard(embedded && !release && Boolean(signature));
   const [rows, setRows] = useState<SignedRelease[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -74,7 +76,7 @@ export function PhotoConsentPage() {
   };
   const nextGuest = () => { setRelease(null); setName(""); setEmail(""); setScope(null); setShootId(crypto.randomUUID()); setError(""); invalidate(); };
   return <div data-theme="bloom" className={`${bloomFontClassName} bloom-ground theme-body min-h-screen`}>
-    <header className="px-[var(--space-page-x)] py-3"><PrimaryNavigation confirmLeave={!release && Boolean(signature)} /></header>
+    {!embedded && <header className="px-[var(--space-page-x)] py-3"><PrimaryNavigation confirmLeave={!release && Boolean(signature)} /></header>}
     <main className="mx-auto max-w-2xl space-y-6 px-[var(--space-page-x)] py-8">
       <div role="group" aria-label="表示言語 / Display language" className="flex gap-3">{(["ja", "en"] as const).map((locale) => <button type="button" key={locale} lang={locale} aria-pressed={language === locale} disabled={busy} className="ui-btn-sub min-h-12 min-w-24 aria-pressed:underline" onClick={() => changeLanguage(locale)}>{locale === "ja" ? "日本語" : "English"}</button>)}</div>
       <h1 className="ui-heading">{en ? "Thank you for being part of my photography" : "写真撮影へのご協力ありがとうございます"}</h1>

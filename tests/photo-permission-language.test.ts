@@ -35,7 +35,8 @@ describe("photography permission language", () => {
     expect(html).toContain("No corporate ads, third-party stock licensing, AI training or face swaps");
     expect(html).toContain("Agree &amp; save");
     expect(html).toContain("Email — optional, only for a receipt");
-    expect(html).toContain("Photo permission");
+    expect(html).toContain("My page");
+    expect(html).not.toContain('href="/photo-consent"');
     expect(html).toContain('lang="en" aria-pressed="true"');
     expect(html).not.toContain("写真撮影へのご協力ありがとうございます");
   });

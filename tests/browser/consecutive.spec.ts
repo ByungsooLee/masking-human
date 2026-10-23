@@ -41,7 +41,7 @@ test("save failures preserve recordings; two guests stay separate and review can
   await expect(page.locator("textarea").first()).toBeVisible();
   await page.getByRole("button", { name: "保存して次の人の準備へ", exact: true }).click();
   await page.goto("/live/archive");
-  const links = page.locator('a[href^="/live/archive/"]');
+  const links = page.locator('a[href^="/mypage/history/"]');
   await expect(links).toHaveCount(2);
   const hrefs = await links.evaluateAll((elements) => elements.map((element) => element.getAttribute("href")));
   expect(new Set(hrefs).size).toBe(2);
@@ -51,8 +51,8 @@ test("save failures preserve recordings; two guests stay separate and review can
   await expect(page.locator("audio")).toHaveAttribute("src", /^blob:/);
   await page.getByRole("button", { name: "分析結果を確認する", exact: true }).click();
   await page.getByRole("button", { name: "最終分析を見る", exact: true }).click();
-  await expect(page.getByRole("link", { name: "過去の履歴を見る", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "マイページへ", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "保存して次の人の準備へ", exact: true }).click();
   await page.goto("/live/archive");
-  await expect(page.locator('a[href^="/live/archive/"]')).toHaveCount(2);
+  await expect(page.locator('a[href^="/mypage/history/"]')).toHaveCount(2);
 });

@@ -1,6 +1,3 @@
-import { Suspense } from "react";
-import { PhotoConsentPage } from "@/components/live/photo-consent-page";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  return <Suspense fallback={<p role="status">Loading…</p>}><PhotoConsentPage /></Suspense>;
-}
+export default function Page() { redirect("/mypage/photo-consent"); }

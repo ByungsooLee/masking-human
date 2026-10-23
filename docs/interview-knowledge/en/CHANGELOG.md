@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-23: management workspace in My page
+
+- Simplify the header to Interview / My page. Move history, photo permission and usage under `/mypage`; redirect old URLs.
+- Add overview counts, unsigned count and media size, with mobile stacking, four visible navigation tabs and Japanese/English text.
+- Remove participant cost badge/global alerts; display alerts within My page only. Preserve budget enforcement and usage recording.
+- Confirm leaving unsaved photo signatures. No password/authentication is added, per the user's choice.
+- Preserve existing DBs, consent terms and conversation instructions; update bilingual specification and decision D17. Validation: 60 files and 254 tests passed, 13 skipped; type check, changed-file lint and demo build passed. Six browser cases cover Japanese/English, mobile, old URLs and consecutive interviews. No live API or real email execution.
+
 ## 2026-10-23: consecutive interviews and history persistence
 
 - Serialize writes by session ID, reject aborted transactions and close DB connections.
