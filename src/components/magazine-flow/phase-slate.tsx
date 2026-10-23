@@ -43,7 +43,7 @@ export function PhaseSlate({ mockOnly }: Props) {
           setBlocked(ui.slateRecordingFailed);
           return;
         }
-        setRecordingSlateAtMs(recorder.clock.elapsedMs() > 0 ? 300 : 0);
+        setRecordingSlateAtMs(recorder.getSlateAtMs() ?? 0);
       } else {
         const ok = await recorder.startWithSlate({
           includeCamera: prepare.includeCamera,

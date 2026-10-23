@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { pickRecorderMimeType, playSlateBeep } from "@/lib/recording/slate-beep";
 import { createSessionClock, type SessionClock } from "@/lib/recording/session-clock";
 import { AudioStemCapture, EditingCapture, type AudioStems, type EditingEvent } from "@/lib/recording/editing-capture";
+import { createDemoAudio } from "@/lib/recording/demo-audio";
 
 export type SessionRecorderState = {
   recording: boolean;
@@ -55,6 +56,7 @@ export function useSessionRecorder() {
     const rec = recorderRef.current;
     if (!rec) {
       setRecording(false);
+      setEditingTimeline(editingRef.current.snapshot());
       return blob;
     }
     return new Promise((resolve) => {
@@ -149,50 +151,23 @@ export function useSessionRecorder() {
     [revokeUrl, clock, captureEditingEvent],
   );
 
-  /** Mock: silent audio file spanning durationMs for edit pipeline tests. */
+  /** Mock fixture: no microphone, camera, or MediaRecorder dependency. */
   const startMockSilent = useCallback(async (durationMs: number, playBeep: boolean) => {
     setError(null);
-    setBlob(null);
     revokeUrl();
-    setBlobUrl(null);
-    setSlateAtMs(null);
+    const fixture = createDemoAudio(durationMs, playBeep);
+    setBlob(fixture);
+    setBlobUrl(URL.createObjectURL(fixture));
+    slateTimeRef.current = 0;
+    setSlateAtMs(0);
     editingRef.current.reset();
     stemResultRef.current = null;
     setAudioStems(null);
     setEditingTimeline([]);
     clock.start();
-    if (playBeep) {
-      try {
-        const ctx = new AudioContext();
-        audioCtxRef.current = ctx;
-        const dest = ctx.createMediaStreamDestination();
-        await playSlateBeep(ctx, dest);
-        setSlateAtMs(clock.elapsedMs());
-        const rec = new MediaRecorder(dest.stream, { mimeType: pickRecorderMimeType() });
-        chunksRef.current = [];
-        rec.ondataavailable = (e) => {
-          if (e.data.size > 0) chunksRef.current.push(e.data);
-        };
-        rec.start(250);
-        recorderRef.current = rec;
-        setRecording(true);
-        setTimeout(() => {
-          void stop();
-        }, durationMs + 500);
-        return true;
-      } catch {
-        setSlateAtMs(0);
-      }
-    }
     setRecording(true);
-    setTimeout(() => {
-      setRecording(false);
-      const empty = new Blob([], { type: "audio/webm" });
-      setBlob(empty);
-      setBlobUrl("");
-    }, durationMs);
     return true;
-  }, [revokeUrl, stop, clock]);
+  }, [revokeUrl, clock]);
 
   const reset = useCallback(() => {
     void stop();

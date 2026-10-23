@@ -9,8 +9,10 @@ import { createReceiptPdf, downloadReceipt } from "@/lib/consent/receipt-pdf";
 import { RELEASE_VERSION, ReleaseSchema, releaseTerms, type ReleaseConfig, type SignedRelease } from "@/lib/consent/release";
 import { bloomFontClassName } from "@/themes/bloom/fonts";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
+import { isDemoOnly } from "@/lib/demo-mode";
 
 export function PhotoConsentPage() {
+  const demoOnly = isDemoOnly();
   const language = useMagazineFlowStore((state) => state.prepare.language);
   const en = language === "en";
   const setPrepare = useMagazineFlowStore((state) => state.setPrepare);
@@ -31,6 +33,7 @@ export function PhotoConsentPage() {
   const [error, setError] = useState("");
   const pending = useRef<SignedRelease | null>(null);
   useEffect(() => {
+    if (demoOnly) return;
     let active = true;
     void fetch("/api/release-consent").then((response) => { if (!response.ok) throw new Error(); return response.json(); }).then((settings: ReleaseConfig) => {
       if (!active) return;
@@ -41,7 +44,7 @@ export function PhotoConsentPage() {
     }).catch(() => { if (active) setError("Could not load settings / 設定を読み込めませんでした"); });
     void listPhotoPermissions().then(setRows).catch(() => setError("Browser history unavailable / ブラウザ履歴を開けません"));
     return () => { active = false; };
-  }, []);
+  }, [demoOnly]);
   const period = shoot.period || (en ? "One year from the shoot date" : "撮影日から1年間");
   const compensation = shoot.compensation || (en ? "Unpaid (no fee)" : "無償（謝礼なし）");
   const photoInput = { ...shoot, format: "simple-v1" as const, project: shoot.project || (en ? "Photography artwork" : "写真作品"), period, compensation, files: shootId, uses: [...SIMPLE_PHOTO_USES], credit: "anonymous" as const, displayName: "", captureConfirmed: true as const };
@@ -51,6 +54,7 @@ export function PhotoConsentPage() {
   const invalidate = () => { pending.current = null; setSignature(""); setAgreed(false); setGeneration((value) => value + 1); };
   const changeLanguage = (locale: "ja" | "en") => { if (locale === language) return; setPrepare({ language: locale }); persistPrepare(); setError(""); if (!release) invalidate(); };
   const submit = async () => {
+    if (demoOnly) return;
     if (!config?.ready || !photo || !scope || !agreed || !signature || !token || busy) return;
     setBusy(true); setError("");
     try {
@@ -75,7 +79,7 @@ export function PhotoConsentPage() {
       <div role="group" aria-label="表示言語 / Display language" className="flex gap-3">{(["ja", "en"] as const).map((locale) => <button type="button" key={locale} lang={locale} aria-pressed={language === locale} disabled={busy} className="ui-btn-sub min-h-12 min-w-24 aria-pressed:underline" onClick={() => changeLanguage(locale)}>{locale === "ja" ? "日本語" : "English"}</button>)}</div>
       <h1 className="ui-heading">{en ? "Thank you for being part of my photography" : "写真撮影へのご協力ありがとうございます"}</h1>
       <p>{config?.organizer || "Byungsoo Lee"} / {shoot.date}</p>
-      {!release && <details className="border-b pb-4"><summary>{en ? "Operator setup" : "運営者設定"}</summary><div className="mt-4 space-y-3"><p>{en ? "Set before handing the screen to the participant. Defaults: one-year artwork use, unpaid. Confirm these conditions for this shoot. This adult-only form is not a worldwide legal guarantee." : "相手に渡す前に設定してください。作品利用は1年間・無償が初期値です。今回の条件として確認・変更してください。成人用の簡易フォームで、海外での有効性を一律に保証するものではありません。"}</p>
+      {!release && !demoOnly && <details className="border-b pb-4"><summary>{en ? "Operator setup" : "運営者設定"}</summary><div className="mt-4 space-y-3"><p>{en ? "Set before handing the screen to the participant. Defaults: one-year artwork use, unpaid. Confirm these conditions for this shoot. This adult-only form is not a worldwide legal guarantee." : "相手に渡す前に設定してください。作品利用は1年間・無償が初期値です。今回の条件として確認・変更してください。成人用の簡易フォームで、海外での有効性を一律に保証するものではありません。"}</p>
         {([["location", en ? "Shoot location (required)" : "撮影場所（必須）", "text"], ["date", en ? "Shoot date" : "撮影日", "date"], ["project", en ? "Project (optional)" : "作品名（任意）", "text"], ["period", en ? "Artwork use period" : "作品の利用期間", "text"], ["compensation", en ? "Compensation" : "謝礼", "text"]] as const).map(([key, label, type]) => <label className="block" key={key}>{label}<input className="ui-field w-full min-h-12" type={type} disabled={busy} maxLength={key === "project" ? 120 : 180} value={key === "period" ? period : key === "compensation" ? compensation : shoot[key]} onChange={(event) => { setShoot((current) => ({ ...current, [key]: event.target.value })); invalidate(); }} /></label>)}
         <label className="block">{en ? "Operator token (private; kept in memory only)" : "運営者トークン（非公開・メモリ上のみ）"}<input type="password" autoComplete="off" disabled={busy} className="ui-field w-full min-h-12" value={token} onChange={(event) => setToken(event.target.value)} /></label>
         <p className="break-all">{en ? "Shoot ID: " : "撮影番号："}{shootId}</p></div></details>}
@@ -85,13 +89,13 @@ export function PhotoConsentPage() {
           <p>{en ? "I may crop and adjust brightness / color. Online photos can be viewed worldwide. No corporate ads, third-party stock licensing, AI training or face swaps. No public name or account tags." : "トリミングや明るさ・色の調整等を行う場合があります。ネットでは世界から閲覧できます。企業広告・第三者への素材販売・AI学習・顔の合成には使いません。本名やアカウントのタグ付けもしません。"}</p>
           <p>{en ? "Use period: " : "作品の利用期間："}{period}<br />{en ? "Compensation: " : "謝礼："}{compensation}</p>
         </section>
-        {!settingsReady && <p role="status">{en ? "Before signing, the operator must complete the shoot location, private token and server setup above." : "署名前に、運営者が上の設定から撮影場所・トークン・サーバー設定を確認してください。"}</p>}
+        {demoOnly ? <p role="status">{en ? "Preview only. Personal information, signatures and saving are disabled." : "表示確認専用です。個人情報の入力・署名・保存は無効です。"}</p> : !settingsReady && <p role="status">{en ? "Before signing, the operator must complete the shoot location, private token and server setup above." : "署名前に、運営者が上の設定から撮影場所・トークン・サーバー設定を確認してください。"}</p>}
         <form className="space-y-5" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
-          <fieldset disabled={busy} className="space-y-4">
+          <fieldset disabled={busy || demoOnly} className="space-y-4">
             <label className="block">{en ? "Your name" : "お名前"}<input required maxLength={100} autoComplete="name" className="ui-field w-full min-h-12" value={name} onChange={(event) => { setName(event.target.value); pending.current = null; }} /></label>
             <fieldset><legend className="mb-2">{en ? "What may be shown?" : "掲載してよい範囲"}</legend><div className="grid gap-3 sm:grid-cols-2">{(["A", "C"] as const).map((option) => <label key={option} className="flex min-h-16 items-center gap-3 rounded-xl border p-3"><input type="radio" name="photo-scope" required checked={scope === option} onChange={() => { setScope(option); invalidate(); }} />{option === "A" ? (en ? "Face / full body OK" : "顔出しOK") : (en ? "Only if I cannot be identified" : "顔などから特定できない写真のみ")}</label>)}</div></fieldset>
             <label className="flex min-h-12 items-center gap-3"><input type="checkbox" required checked={agreed} onChange={(event) => { setAgreed(event.target.checked); pending.current = null; }} />{en ? "I am 18 or older and agree to the photography and artwork uses described here." : "18歳以上で、このページに記載された撮影・作品利用に同意します。"}</label>
-            <PhotoSignaturePad key={`${language}-${generation}`} en={en} disabled={busy} onChange={(value) => { setSignature(value); pending.current = null; }} />
+            <PhotoSignaturePad key={`${language}-${generation}`} en={en} disabled={busy || demoOnly} onChange={(value) => { setSignature(value); pending.current = null; }} />
             <label className="block">{en ? "Email — optional, only for a receipt" : "メール（任意・控えをご希望の方のみ）"}<input type="email" maxLength={254} autoComplete="email" className="ui-field w-full min-h-12" value={email} onChange={(event) => { setEmail(event.target.value); pending.current = null; }} /></label>
           </fieldset>
           <p className="text-sm leading-loose">{en ? "Participation is optional. Contact me before or after publication to withdraw consent or request removal. Sold prints or reposts may not be recoverable. Your legal rights remain. Under 18? Please ask the operator to arrange guardian permission; do not sign this adult form." : "参加は任意です。公開前後の撤回・削除は下の連絡先へご相談ください。販売済み作品や転載は回収できない場合があります。法令上の権利は制限しません。18歳未満の方はここに署名せず、運営者へ保護者対応をご相談ください。"}</p>

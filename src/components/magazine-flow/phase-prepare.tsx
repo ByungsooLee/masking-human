@@ -27,7 +27,9 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const seedGraph = useMemo(() => buildConversationGraph([], 5), []);
-  const micStatus = mic.denied ? ui.micDenied : mic.hearing ? ui.micHearing : ui.micQuiet;
+  const micStatus = mockOnly
+    ? (prepare.language === "en" ? "The demo does not use your microphone or camera." : "デモではマイク・カメラを使用しません。")
+    : mic.denied ? ui.micDenied : mic.hearing ? ui.micHearing : ui.micQuiet;
 
   const startBlockers = interviewStartBlockers(prepare);
   const canStart = startBlockers.length === 0;
@@ -101,6 +103,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
           <label className="flex flex-col gap-1 text-[color:var(--color-ink-muted)]">
             {ui.guestName}
             <input
+              disabled={mockOnly}
               value={prepare.guestName}
               onChange={(e) => setPrepare({ guestName: e.target.value })}
               className="ui-field"
@@ -109,6 +112,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
           <label className="flex flex-col gap-1 text-[color:var(--color-ink-muted)]">
             {ui.place}
             <input
+              disabled={mockOnly}
               value={prepare.place}
               onChange={(e) => setPrepare({ place: e.target.value })}
               className="ui-field"
@@ -167,6 +171,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
           <label className="flex gap-3">
             <input
               type="checkbox"
+              disabled={mockOnly}
               checked={prepare.includeCamera}
               onChange={(e) => setPrepare({ includeCamera: e.target.checked, consents: { ...prepare.consents, photoVideo: e.target.checked } })}
             />
@@ -188,6 +193,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
               <label className="flex gap-3">
                 <input
                   type="checkbox"
+                  disabled={mockOnly}
                   checked={prepare.consents[key]}
                   onChange={(e) => {
                     const checked = e.target.checked;
