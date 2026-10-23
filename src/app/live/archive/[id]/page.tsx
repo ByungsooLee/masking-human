@@ -1,15 +1,10 @@
 import { Suspense } from "react";
-import { ArchiveSessionDetail } from "@/components/live/archive-session-detail";
+import { redirect } from "next/navigation";
 
-type Props = { params: Promise<{ id: string }> };
-
-async function ArchiveDetailContent({ params }: Props) {
+async function LegacyDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <ArchiveSessionDetail id={id} />;
+  return redirect(`/mypage/history/${encodeURIComponent(id)}`);
 }
-
-export default function ArchiveDetailPage({ params }: Props) {
-  return <Suspense fallback={<div className="px-6 py-8" role="status">Loading…</div>}>
-    <ArchiveDetailContent params={params} />
-  </Suspense>;
+export default function Page(props: { params: Promise<{ id: string }> }) {
+  return <Suspense fallback={<p role="status">Loading…</p>}><LegacyDetail {...props} /></Suspense>;
 }

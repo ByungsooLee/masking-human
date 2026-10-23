@@ -14,7 +14,7 @@ import { downloadReceipt } from "@/lib/consent/receipt-pdf";
 import { exposureLabel } from "@/lib/consent/release";
 import { HistoryEditingDownloads } from "@/components/live/history-editing-downloads";
 
-export function ArchiveSessionDetail({ id }: { id: string }) {
+export function ArchiveSessionDetail({ id, embedded = false }: { id: string; embedded?: boolean }) {
   const router = useRouter();
   const language = useMagazineFlowStore((state) => state.prepare.language);
   const [session, setSession] = useState<ArchivedSession | null>(null);
@@ -34,9 +34,9 @@ export function ArchiveSessionDetail({ id }: { id: string }) {
     return () => { cancelled = true; if (url) URL.revokeObjectURL(url); };
   }, [id]);
   return <div data-theme="bloom" className={`${bloomFontClassName} bloom-ground theme-body min-h-screen`}>
-    <header className="px-[var(--space-page-x)] py-3"><PrimaryNavigation /></header>
+    {!embedded && <header className="px-[var(--space-page-x)] py-3"><PrimaryNavigation /></header>}
     <main className="mx-auto max-w-[72rem] px-[var(--space-page-x)] py-[var(--space-page-y)]">
-      <Link href="/live/archive" className="ui-btn-sub inline-block mb-6">{en ? "Back to history" : "履歴に戻る"}</Link>
+      <Link href="/mypage/history" className="ui-btn-sub inline-block mb-6">{en ? "Back to history" : "履歴に戻る"}</Link>
       {!loaded ? <p role="status">{en ? "Loading…" : "読み込んでいます…"}</p> : !session ? <p role="alert">{failed ? (en ? "Could not open browser storage. Please retry." : "ブラウザの保存領域を開けませんでした。再読み込みしてください。") : (en ? "This interview was not found in this browser." : "このブラウザには該当の履歴がありません。")}</p> : <>
         <button type="button" className="ui-btn mb-6" onClick={() => {
           useMagazineFlowStore.getState().resumeArchivedSession(session);

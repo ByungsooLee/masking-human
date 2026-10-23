@@ -30,8 +30,8 @@ describe("separate photography permission", () => {
     expect(ReleaseSchema.safeParse({ ...base, purpose: "interview" }).success).toBe(false);
   });
   it("uses a separate page, navigation entry, browser archive and Suspense boundary", () => {
-    expect(readFileSync("src/components/primary-navigation.tsx", "utf8")).toContain('href: "/photo-consent"');
-    expect(readFileSync("src/app/photo-consent/page.tsx", "utf8")).toContain("<Suspense");
+    expect(readFileSync("src/components/live/my-page-frame.tsx", "utf8")).toContain('href: "/mypage/photo-consent"');
+    expect(readFileSync("src/app/mypage/photo-consent/page.tsx", "utf8")).toContain("<Suspense");
     const source = readFileSync("src/components/live/photo-consent-page.tsx", "utf8");
     expect(source).toContain("<PhotoSignaturePad");
     expect(source).not.toContain("<ReleaseConsent");

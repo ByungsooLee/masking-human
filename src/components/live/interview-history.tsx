@@ -1,0 +1,131 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { prepareNewInterview } from "@/lib/archive/prepare-new-interview";
+import Link from "next/link";
+import { ArchiveStorageStatus, formatStorageBytes } from "@/components/live/archive-storage-status";
+import { PrimaryNavigation } from "@/components/primary-navigation";
+import { FacetChips } from "@/components/graph/facet-chips";
+import { FocusDetail } from "@/components/graph/focus-detail";
+import { ThoughtGraph } from "@/components/graph/thought-graph";
+import { archivedMediaBytes, deleteArchivedSession, listArchivedSessions, type ArchivedSession } from "@/lib/archive/session-archive";
+import { buildArchiveGraph } from "@/lib/graph/build-archive-graph";
+import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
+import { bloomFontClassName } from "@/themes/bloom/fonts";
+import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
+
+function guestTexts(row: ArchivedSession) {
+  return row.transcript.filter((u) => u.speaker === "guest" && !u.excluded && u.text.trim()).map((u) => u.text);
+}
+
+export function InterviewHistory({ embedded = false }: { embedded?: boolean }) {
+  const ui = useMagazineFlowUi();
+  const language = useMagazineFlowStore((state) => state.prepare.language);
+  const [rows, setRows] = useState<ArchivedSession[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    void listArchivedSessions().then(setRows).catch(() => setLoadError(true));
+  }, []);
+
+  const graph = useMemo(
+    () => buildArchiveGraph(rows.map((r) => ({ id: r.id, label: r.prepare.place || r.savedAt.slice(0, 10), guestTexts: guestTexts(r) }))),
+    [rows],
+  );
+  const focus = selectedId && graph.nodes.some((n) => n.id === selectedId) ? selectedId : null;
+  const related = useMemo(() => {
+    if (!focus) return null;
+    const ids = new Set([focus]);
+    for (const e of graph.edges) {
+      if (e.source === focus) ids.add(e.target);
+      if (e.target === focus) ids.add(e.source);
+    }
+    return ids;
+  }, [focus, graph]);
+
+  const describe = (id: string) => {
+    const row = rows.find((r) => r.id === id);
+    if (!row) return null;
+    return {
+      id,
+      text: row.draft?.heroQuote.text ?? guestTexts(row)[0] ?? row.prepare.place,
+      meta: `${row.prepare.place}　${row.savedAt.slice(0, 10)}`,
+    };
+  };
+
+  return (
+    <div data-theme="bloom" className={`${bloomFontClassName} bloom-ground theme-body min-h-screen`}>
+      {!embedded && <header className="border-b border-[color:var(--color-thread)] px-[var(--space-page-x)] py-3">
+        <div className="mx-auto max-w-[72rem]"><PrimaryNavigation /></div>
+      </header>}
+      <div className="mx-auto max-w-[72rem] px-[var(--space-page-x)] py-[var(--space-page-y)] text-[length:var(--text-body)]">
+        <h1 className="ui-heading mb-4">{ui.archiveHeading}</h1>
+        <Link onNavigate={prepareNewInterview} href="/live" className="mb-[var(--space-block)] inline-block text-[color:var(--color-rose)] underline underline-offset-4">
+          {ui.backToLive}
+        </Link>
+        <ArchiveStorageStatus count={rows.length} mediaBytes={rows.reduce((total, row) => total + archivedMediaBytes(row), 0)} en={language === "en"} />
+        {loadError ? <p role="alert">{language === "ja" ? "履歴を読み込めませんでした。ブラウザの保存設定を確認し、再読み込みしてください。" : "Could not load history. Check browser storage settings and reload."}</p> : rows.length === 0 ? (
+          <p className="text-[color:var(--color-ink-muted)]">{ui.archiveEmpty}</p>
+        ) : (
+          <>
+            <section className="mb-[var(--space-block)] flex flex-col gap-4">
+              <p className="text-[color:var(--color-ink-muted)]">{ui.archiveMapHint}</p>
+              <div className="grid gap-4 landscape:md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+                <div className="ui-panel h-[min(60vh,32rem)] p-2">
+                  <ThoughtGraph graph={graph} mode="idle" selectedId={focus} onSelect={setSelectedId} className="h-full w-full" />
+                </div>
+                <div className="flex flex-col gap-4">
+                  <FacetChips nodes={graph.nodes} selectedId={focus} onSelect={setSelectedId} />
+                  <FocusDetail
+                    graph={graph}
+                    selectedId={focus}
+                    describe={describe}
+                    heading={ui.sessionsWithWord}
+                    onSelect={setSelectedId}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <h2 className="mb-3 text-[color:var(--color-ink)]">{ui.archiveListHeading}</h2>
+            <ul className="flex max-w-[var(--content-max)] flex-col gap-4">
+              {rows.map((row) => (
+                <li key={row.id} className="ui-panel" data-active={related?.has(row.id) ?? false}>
+                  <p className="text-[length:var(--text-lead)] leading-[var(--leading-body)] text-[color:var(--color-ink)]">
+                    {row.draft?.heroQuote.text ?? row.prepare.place}
+                  </p>
+                  <p className="mt-2 text-[color:var(--color-ink-muted)]">
+                    {row.prepare.place} <span className="ui-num">{row.savedAt.slice(0, 10)}</span>
+                  </p>
+                  <p className="mt-2">{formatStorageBytes(archivedMediaBytes(row))} · {row.releaseConsent ? (language === "ja" ? "署名済み" : "Signed") : (language === "ja" ? "掲載署名なし" : "No publication signature")}</p>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <Link className="ui-btn-sub inline-block" href={`/mypage/history/${encodeURIComponent(row.id)}`}>{language === "ja" ? "分析結果・素材を開く" : "Open analysis & media"}</Link>
+                    <button
+                      type="button"
+                      className="ui-btn-sub py-1"
+                      aria-pressed={focus === row.id}
+                      onClick={() => setSelectedId(focus === row.id ? null : row.id)}
+                    >
+                      {ui.showOnMap}
+                    </button>
+                    <button
+                      type="button"
+                      className="ui-btn-sub py-1"
+                      onClick={() => {
+                        if (!window.confirm(language === "ja" ? "この履歴と録音をこのブラウザから削除します。バックアップは保存しましたか？サーバーの同意記録は削除されません。" : "Delete this history and its media from this browser? Keep a backup first. Server consent records are not deleted.")) return;
+                        void deleteArchivedSession(row.id).then(() => listArchivedSessions().then(setRows)).catch(() => setLoadError(true));
+                      }}
+                    >
+                      {ui.archiveDelete}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

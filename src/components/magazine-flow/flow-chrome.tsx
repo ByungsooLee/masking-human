@@ -3,7 +3,6 @@
 import { useUiTranslator } from "@/hooks/use-ui-translator";
 
 import { PrimaryNavigation } from "@/components/primary-navigation";
-import { SessionCostBadge } from "@/components/usage/session-cost-badge";
 import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 import type { MagazineFlowPhase } from "@/lib/magazine-flow/types";
 
@@ -21,9 +20,6 @@ export function FlowChrome({
   phase,
   showBack,
   onBack,
-  sessionEstimatedUsd,
-  pricingConfigured,
-  showCost,
   mockOnly = false,
 }: Props) {
   const t = useUiTranslator();
@@ -43,13 +39,6 @@ export function FlowChrome({
               if (!window.confirm(message)) event.preventDefault();
             }}
           >{t("開始画面に戻る")}</a>}
-          {showCost && (
-            <SessionCostBadge
-              inline
-              estimatedUsd={sessionEstimatedUsd}
-              pricingConfigured={pricingConfigured}
-            />
-          )}
           {showBack && onBack && phase !== "prepare" && phase !== "slate" && phase !== "conversation" && (
             <button type="button" onClick={onBack} className="ui-btn-sub py-1">
               {ui.back}

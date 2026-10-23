@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { SpendAlertBanner } from "@/components/usage/spend-alert-banner";
 import { InterfaceLanguageSync } from "@/components/interface-language-sync";
 import { DemoNotice } from "@/components/demo-notice";
 import { isDemoOnly } from "@/lib/demo-mode";
@@ -13,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ja" className="h-full antialiased">
-      <body className="min-h-full flex flex-col"><InterfaceLanguageSync />{isDemoOnly() ? <DemoNotice /> : <SpendAlertBanner />}{children}</body>
+      <body className="min-h-full flex flex-col"><InterfaceLanguageSync />{isDemoOnly() && <DemoNotice />}{children}</body>
     </html>
   );
 }

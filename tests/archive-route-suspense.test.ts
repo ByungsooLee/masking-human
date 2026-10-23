@@ -2,7 +2,7 @@ import { Suspense, type ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/components/live/archive-session-detail", () => ({ ArchiveSessionDetail: () => null }));
-import ArchiveDetailPage from "@/app/live/archive/[id]/page";
+import ArchiveDetailPage from "@/app/mypage/history/[id]/page";
 
 describe("archive detail runtime boundary", () => {
   it("renders Suspense before awaiting URL params or rendering pathname-dependent navigation", async () => {

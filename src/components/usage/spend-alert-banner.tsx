@@ -17,7 +17,7 @@ export function SpendAlertBanner() {
       <p className="font-medium">{t("利用料アラート：今月")}{alert.source === "estimate" ? t("の推定") : t("の実績")}{t("が1ドルを超えました（$")}{alert.amountUsd.toFixed(3)}）</p>
       <p className="mt-1 text-sm">{t(alert.note)} {t("会話は自動停止しません。")}</p>
       {error && <p className="mt-1 text-sm">{t("更新に失敗したため、最後に取得した金額を表示しています。")}</p>}
-      <Link href="/usage" className="mt-2 inline-block underline">{t("利用料を確認する")}</Link>
+      <Link href="/mypage/usage" className="mt-2 inline-block underline">{t("利用料を確認する")}</Link>
     </div>
   </aside>;
 }
