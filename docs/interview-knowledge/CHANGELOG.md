@@ -2,6 +2,16 @@
 
 [English](en/CHANGELOG.md)
 
+## 2026-10-23：Next.jsセキュリティ更新
+
+- ユーザー依頼の更新CLIが選定したNext.js 16.4.2へ、16.4.0から更新。同一メジャーのためcodemodは実行せず、`eslint-config-next` も16.4.2に統一。
+- `experimental.agentUpgrade: "security"` を明示し、既存設定・会話・分析・同意・実行プロンプトは維持。判断D15を日英で追加。
+- ローカル・リモートのブランチ／履歴とGitHubの公開PRを確認し、同等の更新作業なし。別worktreeで実施。
+- 検証：依存インストール成功、`next --version` は16.4.2。58ファイル・248テスト成功／13件スキップ（実API無効）。`build:demo`、`tsc --noEmit`、設定ファイルのESLint成功。
+- 16.4.2のproductionデモに対し、ブラウザE2E 3件成功（日英のフロー・モバイル表示・履歴・素材保存・API拒否）。`/live?mock=1` は200、`/api/session` は403。
+- `npm audit` ではNext.js本体の指摘はなく、他の開発依存に7件（high 5、moderate 2）が残る。関連パッケージは `@next/eslint-plugin-next`、`eslint-config-next`、`fast-glob`、`micromatch`、`braces`、`vitest`、`@vitest/mocker`。無関係な強制ダウングレード・一括修正は行っていない。
+- 実音声・有料API・実メールは実行せず。全体CIは更新PRで記録する。
+
 ## 2026-10-23：英語版と開発ルール
 
 - 索引・現行仕様・実践集・評価案・判断記録・出典台帳・変更履歴の対応英訳を追加。
