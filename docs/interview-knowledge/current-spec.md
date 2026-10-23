@@ -1,5 +1,7 @@
 # 現行仕様と実装の所在
 
+[English](en/current-spec.md)
+
 更新日：2026-10-23。区分は [索引](README.md)、出典記号は [台帳](sources/README.md) を参照。
 
 ## 目的と成功条件
