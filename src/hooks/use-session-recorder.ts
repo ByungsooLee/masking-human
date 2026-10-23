@@ -36,7 +36,15 @@ export function useSessionRecorder(initial?: ArchivedSession | null) {
   const [slateAtMs, setSlateAtMs] = useState<number | null>(initial?.slateAtMs ?? null);
   const slateTimeRef = useRef<number | null>(initial?.slateAtMs ?? null);
   const [blob, setBlob] = useState<Blob | null>(initial?.recordingBlob ?? null);
-  const [blobUrl, setBlobUrl] = useState<string | null>(() => initial?.recordingBlob ? URL.createObjectURL(initial.recordingBlob) : null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const initialBlob = initial?.recordingBlob;
+  useEffect(() => {
+    if (!initialBlob) return;
+    const url = URL.createObjectURL(initialBlob);
+    let cancelled = false;
+    queueMicrotask(() => { if (!cancelled) setBlobUrl(url); });
+    return () => { cancelled = true; URL.revokeObjectURL(url); };
+  }, [initialBlob]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => () => {
