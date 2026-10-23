@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { getLiveUiCopy } from "@/lib/i18n/live-ui";
 import { scheduleMockConversation } from "@/lib/realtime/mock-conversation";
+import { isDemoOnly } from "@/lib/demo-mode";
 
 export type MockStartOptions = { sessionOffsetMs?: number; language?: "ja" | "en" };
 import { patchUsageSession } from "@/lib/usage/client-session-sync";
@@ -68,12 +69,12 @@ export function useMockRealtimeInterview() {
     setSessionEstimatedUsd(0);
     setMockScriptComplete(false);
 
-    const trackRes = await fetch("/api/usage/session", {
+    const trackRes = !isDemoOnly() ? await fetch("/api/usage/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ isMock: true }),
-    });
-    if (trackRes.ok) {
+    }) : null;
+    if (trackRes?.ok) {
       const track = (await trackRes.json()) as { sessionId?: string; patchToken?: string };
       if (track.sessionId && track.patchToken) {
         usageSessionIdRef.current = track.sessionId;
