@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-23: consecutive interviews and history persistence
+
+- Serialize writes by session ID, reject aborted transactions and close DB connections.
+- Retain stopped recordings and offer retry on ending-save failure. Save review state before the next participant; resume review/consent from history.
+- Reset identity, consent, recording and IDs; prevent handoff during signature submission.
+- Add history media size, approximate capacity, persistent-storage request and deletion confirmation.
+- Update bilingual specification and decision D16. No cloud connection, three-screen capture or duration change.
+- Validation: 59 files and 250 tests passed, 13 skipped; type check, changed-file lint and demo build passed. Four production-demo browser tests passed (failed saves/retry, two consecutive guests, resume and existing Japanese/English flows). No live API, real email or physical capture tests. The existing Next.js 16.4.0 warning interrupted the build once; retry passed. Upgrade to 16.4.2 is separate PR #6.
+
 ## 2026-10-23: bilingual documentation and development rules
 
 - Added maintained English counterparts for the index, specification, playbook, evaluation proposal, decisions, source register and changelog.

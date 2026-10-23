@@ -59,8 +59,10 @@ function MagazineFlowInner({ mockOnly: mockFromUrl }: Props) {
 }
 
 export function MagazineFlow(props: Props) {
+  const epoch = useMagazineFlowStore((state) => state.sessionEpoch);
+  const resumedSession = useMagazineFlowStore((state) => state.resumedSession);
   return (
-    <RecordingSessionProvider>
+    <RecordingSessionProvider key={epoch} initialSession={resumedSession}>
       <MagazineFlowInner {...props} />
     </RecordingSessionProvider>
   );

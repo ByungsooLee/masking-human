@@ -43,3 +43,7 @@ Preserved the submitted material; reconciled current behavior; created a playboo
 D14: Japanese files at the knowledge root are the editorial source; `en/` maintains corresponding English translations with the same evidence categories and decision IDs. Original received material remains unchanged in the shared source archive. Maintain both languages in one PR and follow the [development workflow](development-workflow.md). Existing user authorization remains valid; routine implementation inside the documented baseline does not require renewed approval. No app behavior changes are introduced by translation.
 
 [日本語](../decisions-and-open-questions.md)
+
+## Consecutive interview decision: 2026-10-23
+
+D16: To support consecutive participants, use existing IndexedDB and wait for successful persistence before handoff. Previously save failure still proceeded to review; now retain the recording and allow retry. Save unfinished review and resume the same session ID later; clear identity and consent for the next guest. Preserve interview, analysis and publication-consent criteria. This supports free device-local accumulation and consecutive operation. Capacity is approximate; no three-screen-recording capture or cloud DB is added. Test failed saves, write ordering, two consecutive guests and resume. D15 belongs to the separate security-upgrade PR and is not reused here.

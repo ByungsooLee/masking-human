@@ -1,5 +1,7 @@
 "use client";
 
+import { SaveAndNext } from "./save-and-next";
+
 import { useMemo, useRef, useState } from "react";
 import { FacetChips } from "@/components/graph/facet-chips";
 import { FocusDetail } from "@/components/graph/focus-detail";
@@ -128,6 +130,7 @@ export function PhaseReview() {
       </section>
       </details>
 
+      <SaveAndNext phase="review" />
       <ul className="ui-thread flex max-w-[var(--content-max)] flex-col gap-3 text-[length:var(--text-body)]">
         {transcript.map((u) => (
           <li

@@ -5,7 +5,7 @@ import { RELEASE_VERSION, ReleaseSchema, exposureLabel, releaseTerms, releaseAck
 import type { PhotoPermission } from "@/lib/consent/photo-permission";
 import { createReceiptPdf, downloadReceipt } from "@/lib/consent/receipt-pdf";
 
-export function ReleaseConsent({ language, value, onChange, onPublicationIntent, sessionId, photo }: { language: "ja" | "en"; value: SignedRelease | null; onChange: (release: SignedRelease | null) => void; onPublicationIntent?: () => void; sessionId?: string; photo?: PhotoPermission }) {
+export function ReleaseConsent({ language, value, onChange, onPublicationIntent, sessionId, photo, onBusyChange }: { language: "ja" | "en"; value: SignedRelease | null; onChange: (release: SignedRelease | null) => void; onPublicationIntent?: () => void; sessionId?: string; photo?: PhotoPermission; onBusyChange?: (busy: boolean) => void }) {
   const en = language === "en";
   const baseAcknowledgements = releaseAcknowledgements(language);
   const acknowledgements = photo ? { ...baseAcknowledgements,
@@ -36,7 +36,7 @@ export function ReleaseConsent({ language, value, onChange, onPublicationIntent,
   const invalidate = () => { setSigned(false); setAgreed(false); setMonetization(false); setWithdrawal(false); pending.current = null; };
   const submit = async () => {
     if (!config?.ready || !level || !signed || !agreed || !confirmed || !monetization || !withdrawal) return;
-    setBusy(true); setError("");
+    setBusy(true); onBusyChange?.(true); setError("");
     try {
       if (!pending.current) {
         const record: ReleaseRecord = ReleaseSchema.parse({ id: crypto.randomUUID(), videoId: sessionId ?? crypto.randomUUID(), purpose: photo ? "photography" : "interview", photo, version: RELEASE_VERSION, language, exposure: level, name: name.trim(), email: email.trim(), age, guardian: age === "guardian" ? guardian.trim() : "", agreed: true, ageConfirmed: true, monetizationConfirmed: true, withdrawalConfirmed: true, signedAt: new Date().toISOString(), terms: releaseTerms(level, language, config, photo), signature: canvas.current!.toDataURL("image/png") });
@@ -49,18 +49,18 @@ export function ReleaseConsent({ language, value, onChange, onPublicationIntent,
       onChange({ ...pending.current!, mail: result.mail, providerId: result.providerId });
       pending.current = null; setToken("");
     } catch { setError(en ? "Could not confirm server save / email. Check the operator token, server settings and connection, then retry. The same receipt will be retried." : "サーバー保存・メール受付を確認できませんでした。運営者トークン・サーバー設定・接続を確認して再試行してください。同じ控えを再送します。"); }
-    finally { setBusy(false); }
+    finally { setBusy(false); onBusyChange?.(false); }
   };
   const retryMail = async () => {
     if (!value) return;
-    setBusy(true); setError("");
+    setBusy(true); onBusyChange?.(true); setError("");
     try {
       const response = await fetch("/api/release-consent", { method: "POST", headers: { "Content-Type": "application/json", "x-consent-operator": token }, body: JSON.stringify(value) });
       const result = await response.json();
       if (!response.ok || result.mail !== "accepted") throw new Error();
       onChange({ ...value, mail: "accepted", providerId: result.providerId }); setToken("");
     } catch { setError(en ? "Email not confirmed. Check configuration / token and retry." : "メール送信受付を確認できませんでした。設定・トークンを確認し再試行してください。"); }
-    finally { setBusy(false); }
+    finally { setBusy(false); onBusyChange?.(false); }
   };
   if (value) return <section className="border-t border-[color:var(--color-thread)] pt-6 space-y-4">
     <h2>{en ? "Thank you for taking part!" : "ご協力ありがとうございました！"}</h2>

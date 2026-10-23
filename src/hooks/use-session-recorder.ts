@@ -1,5 +1,6 @@
 "use client";
 
+import type { ArchivedSession } from "@/lib/archive/session-archive";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pickRecorderMimeType, playSlateBeep } from "@/lib/recording/slate-beep";
 import { createSessionClock, type SessionClock } from "@/lib/recording/session-clock";
@@ -15,7 +16,7 @@ export type SessionRecorderState = {
   error: string | null;
 };
 
-export function useSessionRecorder() {
+export function useSessionRecorder(initial?: ArchivedSession | null) {
   const [clock] = useState(createSessionClock);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -23,19 +24,27 @@ export function useSessionRecorder() {
   const streamRef = useRef<MediaStream | null>(null);
   const destinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const aiSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const editingRef = useRef(new EditingCapture());
+  const editingRef = useRef(new EditingCapture(initial?.editingTimeline));
   const stemCaptureRef = useRef<AudioStemCapture | null>(null);
-  const stemResultRef = useRef<AudioStems | null>(null);
-  const [audioStems, setAudioStems] = useState<AudioStems | null>(null);
-  const [editingTimeline, setEditingTimeline] = useState<EditingEvent[]>([]);
+  const stemResultRef = useRef<AudioStems | null>(initial?.audioStems ?? null);
+  const [audioStems, setAudioStems] = useState<AudioStems | null>(initial?.audioStems ?? null);
+  const [editingTimeline, setEditingTimeline] = useState<EditingEvent[]>(initial?.editingTimeline ?? []);
   const captureEditingEvent = useCallback((type: EditingEvent["type"], data: unknown) => { editingRef.current.observe(type, data, clock.elapsedMs()); }, [clock]);
   const getEditingTimeline = useCallback(() => editingRef.current.snapshot(), []);
   const getAudioStems = useCallback(() => stemResultRef.current, []);
   const [recording, setRecording] = useState(false);
-  const [slateAtMs, setSlateAtMs] = useState<number | null>(null);
-  const slateTimeRef = useRef<number | null>(null);
-  const [blob, setBlob] = useState<Blob | null>(null);
+  const [slateAtMs, setSlateAtMs] = useState<number | null>(initial?.slateAtMs ?? null);
+  const slateTimeRef = useRef<number | null>(initial?.slateAtMs ?? null);
+  const [blob, setBlob] = useState<Blob | null>(initial?.recordingBlob ?? null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const initialBlob = initial?.recordingBlob;
+  useEffect(() => {
+    if (!initialBlob) return;
+    const url = URL.createObjectURL(initialBlob);
+    let cancelled = false;
+    queueMicrotask(() => { if (!cancelled) setBlobUrl(url); });
+    return () => { cancelled = true; URL.revokeObjectURL(url); };
+  }, [initialBlob]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => () => {
@@ -47,6 +56,8 @@ export function useSessionRecorder() {
     const context = audioCtxRef.current;
     if (context && context.state !== "closed") void context.close();
   }, []);
+
+  useEffect(() => () => { if (blobUrl) URL.revokeObjectURL(blobUrl); }, [blobUrl]);
 
   const revokeUrl = useCallback(() => {
     if (blobUrl) URL.revokeObjectURL(blobUrl);

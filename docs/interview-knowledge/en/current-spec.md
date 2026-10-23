@@ -52,3 +52,17 @@ Nondemo voice needs an API key; consent storage needs dedicated operational conf
 Actual API voice quality, iPad/external-microphone/external-video synchronization and real email delivery remain unverified. Mock or unit-test success does not complete those checks.
 
 [日本語](../current-spec.md)
+
+## Consecutive interview storage (added 2026-10-23)
+
+On conversation ending, save the transcript, recording/video, audio stems and events under the session ID in this device's IndexedDB. If saving fails, remain on the conversation screen, retain stopped recording data and allow retry.
+
+“Save and prepare the next interview” is available during transcript review, findings review and final analysis. Persist the current review phase before returning to preparation. Keep language, place and interviewer preferences; clear guest name, consent checks, recording, transcript, findings feedback, publication signature and session ID. Disable handoff while signature submission is pending. Unsubmitted signature form input is not included in history.
+
+“Resume review and consent” in archive details restores the same session ID, recording, transcript and feedback, so unfinished review/signing can continue. Resuming does not start recording. Older entries without a review phase start at transcript review. Unsigned material is not publication permission.
+
+History displays entry count, recorded-media sizes and the browser's approximate available space for the whole site. Supporting browsers can request automatic-eviction protection; neither approval nor capacity is guaranteed, and it does not replace backup against manual deletion/device loss. Confirm deletion; server consent records are not deleted. Writes to the same session ID are serialized within this page. Concurrent edits across tabs are not resolved.
+
+This is device-local storage without additional service fees, not cloud sync or device sharing. Capturing/storing three screen recordings and crash-durable saving during recording are outside this change. The live voice duration remains about ten minutes.
+
+Implementation: [Archive DB](../../../src/lib/archive/session-archive.ts), [Save and next](../../../src/components/magazine-flow/save-and-next.tsx), [Storage display](../../../src/components/live/archive-storage-status.tsx).
