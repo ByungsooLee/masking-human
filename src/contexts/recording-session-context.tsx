@@ -1,5 +1,6 @@
 "use client";
 
+import type { ArchivedSession } from "@/lib/archive/session-archive";
 import { createContext, useContext, type ReactNode } from "react";
 import { useSessionRecorder } from "@/hooks/use-session-recorder";
 
@@ -7,8 +8,8 @@ type RecordingSessionContextValue = ReturnType<typeof useSessionRecorder>;
 
 const RecordingSessionContext = createContext<RecordingSessionContextValue | null>(null);
 
-export function RecordingSessionProvider({ children }: { children: ReactNode }) {
-  const recorder = useSessionRecorder();
+export function RecordingSessionProvider({ children, initialSession }: { children: ReactNode; initialSession?: ArchivedSession | null }) {
+  const recorder = useSessionRecorder(initialSession);
   return <RecordingSessionContext.Provider value={recorder}>{children}</RecordingSessionContext.Provider>;
 }
 

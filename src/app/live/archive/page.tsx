@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { ArchiveStorageStatus, formatStorageBytes } from "@/components/live/archive-storage-status";
 import { PrimaryNavigation } from "@/components/primary-navigation";
 import { FacetChips } from "@/components/graph/facet-chips";
 import { FocusDetail } from "@/components/graph/focus-detail";
 import { ThoughtGraph } from "@/components/graph/thought-graph";
-import { deleteArchivedSession, listArchivedSessions, type ArchivedSession } from "@/lib/archive/session-archive";
+import { archivedMediaBytes, deleteArchivedSession, listArchivedSessions, type ArchivedSession } from "@/lib/archive/session-archive";
 import { buildArchiveGraph } from "@/lib/graph/build-archive-graph";
 import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 import { bloomFontClassName } from "@/themes/bloom/fonts";
@@ -62,6 +63,7 @@ export default function LiveArchivePage() {
         <Link href="/live" className="mb-[var(--space-block)] inline-block text-[color:var(--color-rose)] underline underline-offset-4">
           {ui.backToLive}
         </Link>
+        <ArchiveStorageStatus count={rows.length} mediaBytes={rows.reduce((total, row) => total + archivedMediaBytes(row), 0)} en={language === "en"} />
         {loadError ? <p role="alert">{language === "ja" ? "履歴を読み込めませんでした。ブラウザの保存設定を確認し、再読み込みしてください。" : "Could not load history. Check browser storage settings and reload."}</p> : rows.length === 0 ? (
           <p className="text-[color:var(--color-ink-muted)]">{ui.archiveEmpty}</p>
         ) : (
@@ -95,6 +97,7 @@ export default function LiveArchivePage() {
                   <p className="mt-2 text-[color:var(--color-ink-muted)]">
                     {row.prepare.place} <span className="ui-num">{row.savedAt.slice(0, 10)}</span>
                   </p>
+                  <p className="mt-2">{formatStorageBytes(archivedMediaBytes(row))} · {row.releaseConsent ? (language === "ja" ? "署名済み" : "Signed") : (language === "ja" ? "掲載署名なし" : "No publication signature")}</p>
                   <div className="mt-3 flex flex-wrap gap-3">
                     <Link className="ui-btn-sub inline-block" href={`/live/archive/${encodeURIComponent(row.id)}`}>{language === "ja" ? "分析結果・素材を開く" : "Open analysis & media"}</Link>
                     <button
@@ -108,7 +111,10 @@ export default function LiveArchivePage() {
                     <button
                       type="button"
                       className="ui-btn-sub py-1"
-                      onClick={() => void deleteArchivedSession(row.id).then(() => listArchivedSessions().then(setRows))}
+                      onClick={() => {
+                        if (!window.confirm(language === "ja" ? "この履歴と録音をこのブラウザから削除します。バックアップは保存しましたか？サーバーの同意記録は削除されません。" : "Delete this history and its media from this browser? Keep a backup first. Server consent records are not deleted.")) return;
+                        void deleteArchivedSession(row.id).then(() => listArchivedSessions().then(setRows)).catch(() => setLoadError(true));
+                      }}
                     >
                       {ui.archiveDelete}
                     </button>

@@ -5,6 +5,7 @@ export type AudioStems = { guest?: AudioStem; ai?: AudioStem; sampleRate: number
 export class EditingCapture {
   private events: EditingEvent[] = [];
   private previous = new Map<string, string>();
+  constructor(events: EditingEvent[] = []) { this.events = events.map((event) => ({ ...event })); }
   reset() { this.events = []; this.previous.clear(); }
   observe(type: EditingEvent["type"], data: unknown, atMs: number) {
     const serialized = JSON.stringify(data);

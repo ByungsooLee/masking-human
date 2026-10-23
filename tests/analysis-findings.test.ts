@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { buildAnalysisFindings } from "@/lib/graph/analysis-findings";
 import { AnalysisFindings } from "@/components/graph/analysis-findings";
+import { RecordingSessionProvider } from "@/contexts/recording-session-context";
 import { PhaseMagazine } from "@/components/magazine-flow/phase-magazine";
 import type { Utterance } from "@/lib/realtime/types";
 
@@ -49,7 +50,7 @@ describe("plain-language analysis findings", () => {
     expect(html).toContain("Not quite");
   });
   it("shows findings even without enough dialogue to build a magazine draft", () => {
-    const html = renderToStaticMarkup(createElement(PhaseMagazine));
+    const html = renderToStaticMarkup(createElement(RecordingSessionProvider, null, createElement(PhaseMagazine)));
     expect(html).toContain("ステップ2 / 3");
     expect(html).toContain("情報が少ないことは、あなたの弱点ではありません");
     expect(html).toContain("最終分析を見る");

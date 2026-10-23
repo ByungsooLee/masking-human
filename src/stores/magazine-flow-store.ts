@@ -1,3 +1,4 @@
+import type { ArchivedSession } from "@/lib/archive/session-archive";
 import { create } from "zustand";
 import type { SignedRelease } from "@/lib/consent/release";
 import type {
@@ -35,7 +36,8 @@ function loadPrepareDefaults(): PrepareState {
       ...defaultPrepare,
       ...parsed,
       includeCamera: false,
-      consents: { ...defaultPrepare.consents, ...parsed.consents },
+      guestName: "",
+      consents: { ...defaultPrepare.consents },
     };
   } catch {
     return defaultPrepare;
@@ -43,6 +45,9 @@ function loadPrepareDefaults(): PrepareState {
 }
 
 type MagazineFlowState = {
+  sessionEpoch: number;
+  resumedSession: ArchivedSession | null;
+  resumeArchivedSession: (session: ArchivedSession) => void;
   phase: MagazineFlowPhase;
   prepare: PrepareState;
   prepareDefaultsLoaded: boolean;
@@ -75,6 +80,24 @@ type MagazineFlowState = {
 };
 
 export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
+  sessionEpoch: 0,
+  resumedSession: null,
+  resumeArchivedSession: (session) => set({
+    sessionEpoch: get().sessionEpoch + 1,
+    resumedSession: session,
+    prepareDefaultsLoaded: true,
+    phase: session.reviewPhase ?? "review",
+    prepare: session.prepare,
+    transcript: session.transcript,
+    draft: session.draft,
+    archiveId: session.id,
+    sessionStartedAt: session.recordedAt ?? null,
+    recordingSlateAtMs: session.slateAtMs,
+    releaseConsent: session.releaseConsent ?? null,
+    analysisFeedback: session.analysisFeedback ?? {},
+    photoUrl: null,
+    publishConsentConfirmed: false,
+  }),
   phase: "prepare",
   prepare: defaultPrepare,
   prepareDefaultsLoaded: false,
@@ -124,7 +147,9 @@ export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
   resetFlow: () =>
     set({
       phase: "prepare",
-      prepare: loadPrepareDefaults(),
+      sessionEpoch: get().sessionEpoch + 1,
+      resumedSession: null,
+      prepare: { ...get().prepare, guestName: "", includeCamera: false, consents: { ...defaultPrepare.consents } },
       transcript: [],
       photoUrl: null,
       draft: null,

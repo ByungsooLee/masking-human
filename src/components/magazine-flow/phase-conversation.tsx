@@ -36,6 +36,8 @@ export function PhaseConversation({ mockOnly }: Props) {
   const endRef = useRef<(() => Promise<void>) | null>(null);
   const [tick, setTick] = useState(0);
   const [ending, setEnding] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const stopped = useRef(false);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -51,21 +53,27 @@ export function PhaseConversation({ mockOnly }: Props) {
   }, [recorder.clock]);
 
   useEffect(() => {
-    if (!endingRef.current) setTranscript(utterances.map((row) => ({ ...row, originalText: undefined })));
+    if (!endingRef.current && !stopped.current) setTranscript(utterances.map((row) => ({ ...row, originalText: undefined })));
   }, [utterances, setTranscript]);
 
-  const canFinish = !mockOnly || mockScriptComplete;
+  const canFinish = saveError || !mockOnly || mockScriptComplete;
   const end = async () => {
     if (!canFinish || endingRef.current) return;
     endingRef.current = true;
     setEnding(true);
     setTranscript(useMagazineFlowStore.getState().transcript.length ? useMagazineFlowStore.getState().transcript : utterances);
-    await active.stop();
-    const recordingBlob = await recorder.stop();
+    setSaveError(false);
+    let recordingBlob = recorder.blob;
+    if (!stopped.current) {
+      await active.stop();
+      recordingBlob = await recorder.stop();
+      stopped.current = true;
+    }
+
     const current = useMagazineFlowStore.getState();
     if (current.archiveId) {
-      try { await saveArchivedSession({ id: current.archiveId, savedAt: new Date().toISOString(), recordedAt: current.sessionStartedAt, prepare: current.prepare, transcript: current.transcript, draft: current.draft, slateAtMs: recorder.getSlateAtMs(), recordingBlob, audioStems: recorder.getAudioStems(), editingTimeline: recorder.getEditingTimeline(), analysisFeedback: current.analysisFeedback, releaseConsent: current.releaseConsent }); }
-      catch { setPhase("review"); return; }
+      try { await saveArchivedSession({ id: current.archiveId, savedAt: new Date().toISOString(), reviewPhase: "review", recordedAt: current.sessionStartedAt, prepare: current.prepare, transcript: current.transcript, draft: current.draft, slateAtMs: recorder.getSlateAtMs(), recordingBlob, audioStems: recorder.getAudioStems(), editingTimeline: recorder.getEditingTimeline(), analysisFeedback: current.analysisFeedback, releaseConsent: current.releaseConsent }); }
+      catch { setSaveError(true); setEnding(false); endingRef.current = false; return; }
     }
     setPhase("review");
   };
@@ -80,7 +88,8 @@ export function PhaseConversation({ mockOnly }: Props) {
     <div className="conversation-actions recording-exclude flex flex-col items-start gap-2">
       {mockOnly && !mockScriptComplete && <p className="text-sm text-[color:var(--color-ink-muted)]">{ui.demoWaitForClimax}</p>}
       {active.error && <p role="alert" className="text-[color:var(--color-rose)]">{active.error}</p>}
-      <button type="button" disabled={!canFinish || ending} onClick={() => void end()} className="ui-btn">{ending ? ui.endingConversation : ui.endConversation}</button>
+      {saveError && <p role="alert">{prepare.language === "ja" ? "履歴に保存できませんでした。この画面を閉じず、容量を確認して保存を再試行してください。" : "History could not be saved. Keep this page open, check storage and retry saving."}</p>}
+      <button type="button" disabled={!canFinish || ending} onClick={() => void end()} className="ui-btn">{ending ? ui.endingConversation : saveError ? (prepare.language === "ja" ? "保存を再試行" : "Retry saving") : ui.endConversation}</button>
     </div>
   </div>;
 }
