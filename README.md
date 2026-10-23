@@ -4,7 +4,7 @@
 
 ## 開発資料
 
-現行仕様、質疑応答のノウハウ、品質評価、未決事項と出典は [インタビュー開発ナレッジ](docs/interview-knowledge/README.md) にまとめています（2026-10-23更新）。開発時はここから対象機能の実装へ進んでください。
+現行仕様、質疑応答のノウハウ、品質評価、未決事項と出典は [インタビュー開発ナレッジ](docs/interview-knowledge/README.md) にまとめています（2026-10-23更新）。[English documentation](docs/interview-knowledge/en/README.md) も用意しています。開発前に `AGENTS.md` と [必読・変更手順](docs/interview-knowledge/development-workflow.md) を確認し、仕様と日英資料をそろえて更新してください。
 
 ## 起動
 

@@ -2,7 +2,7 @@
 
 ## 仕様・対話ノウハウの入口（2026-10-23追記）
 
-[インタビュー開発ナレッジ](interview-knowledge/README.md) に現行仕様、聞き方、評価案、NotebookLM原資料との照合と未決事項をまとめました。旧 `requirements.md` / `interview-design.md` / `testing.md` には旧段階の記述が残るため、現在の音声会話を変更する際は新しい入口を先に読んでください。以下の検証結果は各記載時点の記録です。
+[インタビュー開発ナレッジ](interview-knowledge/README.md) に現行仕様、聞き方、評価案、NotebookLM原資料との照合と未決事項をまとめました。旧 `requirements.md` / `interview-design.md` / `testing.md` には旧段階の記述が残るため、現在の音声会話を変更する際は新しい入口を先に読んでください。[英語版](interview-knowledge/en/README.md) と [必読・変更手順](interview-knowledge/development-workflow.md) も参照し、ルート `AGENTS.md` のルールに従って既存仕様と日英資料を維持してください。以下の検証結果は各記載時点の記録です。
 
 ## 最初に
 
