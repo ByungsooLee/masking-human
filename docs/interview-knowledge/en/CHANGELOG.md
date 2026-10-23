@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-23: Next.js security upgrade
+
+- Updated Next.js 16.4.0 to the CLI-selected 16.4.2 security target. No codemod for this same-major update; aligned `eslint-config-next` to 16.4.2.
+- Explicitly set `experimental.agentUpgrade: "security"`, preserving existing configuration, conversation, analysis, consent and executable prompts. Added bilingual decision D15.
+- Checked local/remote branches/history and GitHub open PRs; no equivalent upgrade found. Used a separate worktree.
+- Validation: dependencies installed; `next --version` reports 16.4.2; 58 files passed, 248 tests passed and 13 skipped with live APIs disabled. `build:demo`, `tsc --noEmit` and ESLint on the config passed.
+- Three browser E2E tests passed against the 16.4.2 production demo, covering Japanese/English flow, mobile views, history, downloads and API rejection. `/live?mock=1` returned 200 and `/api/session` returned 403.
+- `npm audit` reports no finding for the Next.js package itself; seven findings remain in other development dependencies (five high, two moderate): `@next/eslint-plugin-next`, `eslint-config-next`, `fast-glob`, `micromatch`, `braces`, `vitest`, `@vitest/mocker`. No unrelated forced downgrade or blanket fix was applied.
+- No live voice, paid API or real email execution. Full CI results are recorded on the upgrade PR.
+
 ## 2026-10-23: bilingual documentation and development rules
 
 - Added maintained English counterparts for the index, specification, playbook, evaluation proposal, decisions, source register and changelog.
