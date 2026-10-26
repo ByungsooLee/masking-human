@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-26: Update the existing security PR
+
+- Updated Next.js and `eslint-config-next` from 16.4.2 to the new CLI-selected 16.4.3 target within PR #6. Added bilingual D15 follow-up, preserving earlier records.
+- Retained `experimental.agentUpgrade: "security"` and existing configuration. No changes to interview, analysis, consent or executable prompts. Used a separate worktree without changing main or its running development server.
+- Validation: dependencies installed; `next --version` reports 16.4.3. All 58 test files passed, 248 tests passed and 13 skipped. Demo production build, type check and config ESLint passed.
+- Three Playwright checks passed against the production demo on a separate port: all APIs rejected, Japanese/English flow, mobile view switching, history, ZIP/SRT/CSV/audio downloads, reload persistence and preview-only photography permission. No real microphone or external API requests.
+- `npm audit`: two moderate findings (`vitest`, `@vitest/mocker`), zero high/critical findings, none for Next.js itself. No unrelated dependency remediation.
+- Live API audio, iPad/external microphones and actual email delivery remain unverified. Mock success does not establish those behaviors.
+
 ## 2026-10-23: Next.js security upgrade
 
 - Updated Next.js 16.4.0 to the CLI-selected 16.4.2 security target. No codemod for this same-major update; aligned `eslint-config-next` to 16.4.2.

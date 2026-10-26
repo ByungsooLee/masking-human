@@ -2,6 +2,15 @@
 
 [English](en/CHANGELOG.md)
 
+## 2026-10-26：既存セキュリティPRの更新
+
+- 新しいCLI選定先に合わせ、既存PR #6のNext.jsと`eslint-config-next`を16.4.2から16.4.3へ更新。D15に日英で追記し、以前の記録は保持。
+- `experimental.agentUpgrade: "security"`と既存設定を維持。会話・分析・同意・実行プロンプトの変更なし。mainと起動中の開発サーバーは変更せず別worktreeで実施。
+- 検証：依存インストール成功、`next --version` は16.4.3。58ファイル・248テスト成功／13件スキップ。デモproductionビルド・型チェック・設定ESLint成功。
+- productionデモ（別ポート）に対するPlaywright 3件成功：全API拒否、日英フロー、スマホ切替、履歴・ZIP/SRT/CSV/音声の保存、再読み込み、写真許可の表示専用確認。実マイク・外部API要求なし。
+- `npm audit` はmoderate 2件（`vitest`、`@vitest/mocker`）、high/critical 0件。Next.js本体の指摘なし。無関係な依存修正は行わず。
+- 実API音声、iPad・外付けマイク、実メール配送は未検証。モックの成功はこれらの検証を意味しない。
+
 ## 2026-10-23：Next.jsセキュリティ更新
 
 - ユーザー依頼の更新CLIが選定したNext.js 16.4.2へ、16.4.0から更新。同一メジャーのためcodemodは実行せず、`eslint-config-next` も16.4.2に統一。
