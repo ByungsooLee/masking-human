@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { ConnectionStatus, ListeningPhase, Utterance } from "@/lib/realtime/types";
+import { appendUsageEntry, type ResponseUsageEntry, type ResponseUsageLedger } from "@/lib/usage/response-ledger";
 
 type RealtimeInterviewState = {
   connectionStatus: ConnectionStatus;
@@ -10,6 +11,9 @@ type RealtimeInterviewState = {
   isMockSession: boolean;
   usageSessionId: string | null;
   sessionEstimatedUsd: number | null;
+  usageLedger: ResponseUsageLedger | null;
+  setUsageLedger: (ledger: ResponseUsageLedger | null) => void;
+  recordUsage: (entry: ResponseUsageEntry) => void;
   mockScriptComplete: boolean;
   inputState: "idle" | "speaking" | "transcribing" | "failed";
   inputPendingSince: number | null;
@@ -35,6 +39,7 @@ const initialState = {
   isMockSession: false,
   usageSessionId: null as string | null,
   sessionEstimatedUsd: null,
+  usageLedger: null as ResponseUsageLedger | null,
   mockScriptComplete: false,
   inputState: "idle" as const,
   inputPendingSince: null as number | null,
@@ -50,6 +55,8 @@ export const useRealtimeInterviewStore = create<RealtimeInterviewState>((set) =>
   setIsMockSession: (isMockSession) => set({ isMockSession }),
   setUsageSessionId: (usageSessionId) => set({ usageSessionId }),
   setSessionEstimatedUsd: (sessionEstimatedUsd) => set({ sessionEstimatedUsd }),
+  setUsageLedger: (usageLedger) => set({ usageLedger }),
+  recordUsage: (entry) => set((state) => ({ usageLedger: state.usageLedger ? appendUsageEntry(state.usageLedger, entry) : null })),
   setMockScriptComplete: (mockScriptComplete) => set({ mockScriptComplete }),
   setInputState: (inputState) => set({ inputState, inputPendingSince: inputState === "transcribing" ? Date.now() : null }),
   reset: () => set({ ...initialState }),

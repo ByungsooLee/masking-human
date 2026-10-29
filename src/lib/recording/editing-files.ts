@@ -2,6 +2,8 @@ import type { ArchivedSession } from "@/lib/archive/session-archive";
 import { buildEditCsv, buildSrt } from "@/lib/magazine-flow/export-transcript";
 import { buildSelfAnalysisMap, buildMindMapText } from "@/lib/graph/self-analysis-map";
 import { buildEditingReplay } from "./editing-replay";
+import { buildEditorialReviewExport } from "@/lib/archive/editorial-review";
+import { buildUsageExport } from "@/lib/usage/response-ledger";
 
 export type EditingFile = { name: string; blob: Blob };
 export function mediaExtension(blob: Blob): string {
@@ -24,6 +26,8 @@ export function buildEditingFiles(session: ArchivedSession): EditingFile[] {
     files.push({ name, blob: track.blob }); audio.push({ role: kind, file: name, startMs: track.startMs, stopMs: track.stopMs });
   }
   files.push(
+    textFile("usage.json", JSON.stringify(buildUsageExport(session.id, session.usageLedger), null, 2), "application/json"),
+    textFile("editorial-review.json", JSON.stringify(buildEditorialReviewExport(session.id, session.transcript), null, 2), "application/json"),
     textFile("replay.html", buildEditingReplay(session, files.find((file) => file.name.startsWith("audio/mix-original"))?.name ?? null), "text/html;charset=utf-8"),
     textFile("README.txt", "PRIVATE EDITING MATERIALS — NOT FOR PUBLIC SHARING\n\nOriginal audio, raw transcripts and event logs may include excluded speech. Apply privacy edits to every track before publishing. A signed release does not mean all original material is safe to publish. Consent PDFs, signatures and email addresses are not included.\n\nTime origin is app recording start, in milliseconds. Speech intervals and event observations are estimates, not sample/frame-accurate synchronization. Align the external camera using recorded clap/beep and verify drift at the end. Separate recorders may have encoder delay.\n\nLegacy entries cannot recover missing audio stems or live map events. Demo recordings are not real interview audio.\n\nSRT and edit CSV omit excluded entries. raw/ retains original observations. map-final represents the edited transcript; raw map events can still contain excluded content.\n\nThis bundle does not include external camera video or generated animated MP4 chat/map clips. It contains source audio and timed data for a later render/export step.\n"),
     textFile("manifest.json", JSON.stringify({ version: 1, sessionId: session.id, recordedAt: session.recordedAt ?? null, language, timing: { origin: "recording-start", unit: "milliseconds", precision: "observed wall-clock events and estimated speech intervals", encoderDelayUnknown: true }, slateAtMs: session.slateAtMs, hasSignedPublicationConsent: Boolean(session.releaseConsent), audio, audioSampleRate: session.audioStems?.sampleRate ?? null, audioIssues: session.audioStems?.issues ?? [], hasLiveEvents: events.length > 0, eventCount: events.length, mapRenderer: "self-analysis-map/source-data-v1", animation: { nodePopMs: 1150, haloMs: 1250, branchMs: 950, note: "Reference settings, not a frame-accurate video recording." } }, null, 2), "application/json"),

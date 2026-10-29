@@ -3,8 +3,22 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import { buildRealtimeClientSecretSession } from "@/lib/realtime/session-payload.server";
+import { INTERVIEW_OPENING } from "@/lib/realtime/interview-opening";
 
 describe("interviewer session instructions", () => {
+  it.each(["default", "reflective"] as const)("opens %s with the project purpose before one product question, in the selected language", (agentId) => {
+    for (const interviewLanguage of ["ja", "en"] as const) {
+      const { instructions } = buildRealtimeClientSecretSession({ agentId, interviewLanguage });
+      const opening = INTERVIEW_OPENING[interviewLanguage];
+      expect(instructions).toContain(opening);
+      expect(opening.match(/[?？]/gu)).toHaveLength(1);
+      expect(opening.indexOf(interviewLanguage === "ja" ? "企画です" : "get to know you")).toBeLessThan(opening.indexOf(interviewLanguage === "ja" ? "まず、" : "What’s one"));
+      expect(instructions).toContain("first turn only");
+      expect(instructions).toContain("Do not repeat the introduction later");
+      expect(instructions).not.toContain("最初の一声は挨拶と");
+      expect(instructions).toContain("冒頭だけ短い3文");
+    }
+  });
   it.each(["default", "reflective"] as const)("moves %s from the cosmetic opening into the guest's own life story", (agentId) => {
     const { instructions } = buildRealtimeClientSecretSession({ agentId });
     expect(instructions).toContain("コスメは入口、主役はその人の人生");

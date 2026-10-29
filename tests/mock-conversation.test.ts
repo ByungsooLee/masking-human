@@ -1,8 +1,20 @@
 import { describe, expect, it, vi } from "vitest";
 import { getMockConversationDurationMs, MOCK_CLIMAX_UTTERANCE_ID, scheduleMockConversation } from "@/lib/realtime/mock-conversation";
 import { pickFeaturedGuestQuote } from "@/themes/shared/quote-feature";
+import { INTERVIEW_OPENING } from "@/lib/realtime/interview-opening";
 
 describe("scheduleMockConversation", () => {
+  it.each(["ja", "en"] as const)("introduces the project once before the first product question in %s", (language) => {
+    vi.useFakeTimers();
+    try {
+      let rows: import("@/lib/realtime/types").Utterance[] = [];
+      const cancel = scheduleMockConversation({ onPhase: () => undefined, onUtterances: (next) => { rows = next; } }, [], 0, language);
+      vi.runAllTimers();
+      expect(rows[0].text).toBe(INTERVIEW_OPENING[language]);
+      expect(rows.filter((row) => row.text === INTERVIEW_OPENING[language])).toHaveLength(1);
+      cancel();
+    } finally { vi.useRealTimers(); }
+  });
   it("plays a longer interview through the final keyword without duplicate IDs", () => {
     vi.useFakeTimers();
     let transcript: import("@/lib/realtime/types").Utterance[] = [];

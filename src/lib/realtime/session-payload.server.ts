@@ -3,15 +3,18 @@ import "server-only";
 import { getRealtimeModel, DEFAULT_REALTIME_VOICE } from "./config";
 import type { InterviewerAgentId, InterviewLanguage, InterviewerProfile } from "@/lib/magazine-flow/types";
 import { loadInterviewerPrompt } from "./load-interviewer-prompt";
+import { INTERVIEW_OPENING } from "./interview-opening";
 
 /** Session object for POST /v1/realtime/client_secrets */
 export function buildRealtimeClientSecretSession(options?: {
   agentId?: InterviewerAgentId;
   interviewLanguage?: InterviewLanguage;
   interviewerProfile?: InterviewerProfile;
+  realtimeModel?: import("./model-options").SelectableRealtimeModel;
 }) {
-  const model = getRealtimeModel();
+  const model = getRealtimeModel(options?.realtimeModel);
   const lang = options?.interviewLanguage ?? "ja";
+  const opening = `OPENING (first turn only): Explain the project before asking about a product. Use this introduction and its one question, then wait. Do not add a greeting-only turn, another question, or a list of alternative habits. Do not repeat the introduction later.\n${INTERVIEW_OPENING[lang]}`;
   const langNote =
     lang === "en"
       ? "LANGUAGE POLICY (takes precedence over language examples above): Conduct the interview in English by default. Open warmly in English. At the beginning of the interview, if the guest's first substantive utterance is in another language, such as Korean or Chinese, immediately continue the interview in that language, including questions, acknowledgments and closing. A substantive utterance is a complete answer or request, not a greeting, name, accent, borrowed word or filler. If uncertain, ask briefly in English which language they prefer. Once established, keep that interview language unless the guest explicitly requests a change. Do not switch the interface language; it stays English. Never translate the guest's transcript into English instead of transcribing their own language."
@@ -27,7 +30,7 @@ export function buildRealtimeClientSecretSession(options?: {
   return {
     type: "realtime" as const,
     model,
-    instructions: `${loadInterviewerPrompt(options?.agentId ?? "default")}\n\n${persona}\n${langNote}`,
+    instructions: `${loadInterviewerPrompt(options?.agentId ?? "default")}\n\n${persona}\n${langNote}\n${opening}`,
     audio: {
       input: {
         transcription: {

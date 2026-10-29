@@ -12,6 +12,7 @@ import { emptyUsageSnapshot } from "@/lib/usage/normalize-usage";
 
 type PatchBody = {
   usage?: RawRealtimeUsage;
+  responseId?: string;
   ended?: boolean;
 };
 
@@ -34,7 +35,7 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/usage/session/
 
   if (body.usage) {
     const delta = normalizeRealtimeUsage(body.usage);
-    mergeSessionUsageDelta(id, delta);
+    mergeSessionUsageDelta(id, delta, typeof body.responseId === "string" ? body.responseId : undefined);
   }
 
   if (body.ended) {

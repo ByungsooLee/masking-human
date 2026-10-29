@@ -1,4 +1,5 @@
 "use client";
+import { ModelComparisonSettings } from "@/components/live/model-comparison-settings";
 
 import { useMemo, useState } from "react";
 import { ThoughtGraph } from "@/components/graph/thought-graph";
@@ -98,6 +99,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
 
       <section className="flex flex-col gap-6 text-[length:var(--text-body)]">
         <h1 className="ui-heading">{ui.prepareHeading}</h1>
+        <ModelComparisonSettings value={prepare.realtimeModel} en={prepare.language === "en"} mockOnly={mockOnly} onChange={(realtimeModel) => { setPrepare({ realtimeModel }); persistPrepare(); }} />
 
         <div className="ui-panel flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-[color:var(--color-ink-muted)]">

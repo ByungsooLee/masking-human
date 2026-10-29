@@ -32,6 +32,7 @@ export type PrepareState = {
   language: InterviewLanguage;
   agentId: InterviewerAgentId;
   interviewerProfile?: InterviewerProfile;
+  realtimeModel?: import("@/lib/realtime/model-options").SelectableRealtimeModel;
   consents: FlowConsents;
   includeCamera: boolean;
 };

@@ -1,5 +1,71 @@
 # Changelog
 
+## 2026-10-27: Dialogue guard without another AI call (D25)
+
+- Validation: 65 files/312 tests passed, 13 skipped. Type check, changed-file ESLint and diff whitespace passed. Twelve synthetic guard cases. No live voice, browser interaction or paid model calls.
+
+- Locally flag repeated completed questions/angles; append a short operator note with recent answers. Two notes/session with four-completed-reply cooldown. Skip incomplete/cancelled, excluded, refused/stopped/repeat-request cases.
+- No regeneration/interruption/judge API. Disclose input-token overhead, false positives/misses and post-generation limitations. Store sent reason/ID/time in usage history/JSON, not note text/excerpts. Demo, consent and flow unchanged.
+- Update bilingual spec/decisions/evaluation/workflow/sources and add synthetic unit cases. No local AI installation or paid calls; live effects unverified.
+
+## 2026-10-27: Mini/standard model comparison (D24)
+
+- Validation: 64 files/300 tests passed, 13 skipped. Type check, changed-file ESLint, diff whitespace and relative knowledge links passed. Upstream API stubbed; bilingual selector statically rendered. No browser interaction or paid voice calls.
+
+- Add persistent operator selection in preparation: mini, standard or server configuration. Unset/legacy settings preserve defaults; API rejects unknown models with 400; disable choices in demos.
+- Propagate selection consistently through upstream session/client connection/usage records. Compare using existing history/JSON. No automatic fallback or duplicate API evaluation. Language, instructions, voice, consent and analysis unchanged.
+- Update bilingual UI/specification/evaluation/decisions/sources/comparison workflow. Live quality, availability and savings unverified. No paid API calls.
+
+## 2026-10-27: Explain the project before the first question (D23)
+
+- Validation: 63 files/293 tests passed, 13 skipped. Type checking, changed-module/test ESLint and diff whitespace checks passed. Live voice and browser interaction not performed.
+
+- Shared bilingual introduction: purpose→mind-map outcome→one question. Allow three brief sentences/about twenty seconds only at opening. Preserve later one-question behavior, language adaptation, consent and model.
+- Deliver the same opening rules to both styles and align first demo lines. Revision 2026-10-27.4; old logs and subsequent demo dialogue unchanged.
+- Update bilingual specification, decisions, playbook and evaluation; add delivery/demo-opening regressions. Live voice and reduced boredom unverified. No paid API calls.
+
+## 2026-10-27: Compact instructions and response usage (D22)
+
+- Validation: 63 files and 289 tests passed, 13 skipped; type check, diff whitespace and relative knowledge links passed. Changed-code ESLint had no errors (two existing unused-variable warnings in the usage PATCH route). History UI verified by bilingual static rendering, not browser interaction, live voice or paid API calls.
+
+- Shared instructions: 6,538→2,497 characters (~62% less), with shorter styles. Follow guest-led relationships, choices, changes or events rather than mandatory scenes. Model, consent, analysis and demos unchanged.
+- Record response ID/status/time, token/cost buckets and prompt hash/revision/characters. Deduplicate IDs client/server, preserve ledger on archive resaves, add bilingual history UI/JSON/editing ZIP export. No conversation text, API keys or signatures in usage records, and no participant UI/PDF addition.
+- Exclude transcription charges and missing events explicitly. Old entries/demos show missing usage. No paid API, invoice reconciliation, live voice or actual savings verification.
+
+## 2026-10-27: Invitations to tell an event (D21)
+
+- Replace procedural/sensory probing with an event's sequence, action and outcome. No memory immediately ends that focus; clarify uncertain referents. Replace older emotion-seeking examples.
+- Update bilingual specification, playbook, evaluation, decisions, sources and workflow. Add five synthetic bilingual cases and instruction-delivery regressions. No real transcript/personal-data storage, paid API, UI, consent, analysis, model or demo changes.
+- String tests do not establish generated conversation quality. Live voice, comparative evaluation and post performance remain unverified.
+- Validation: all 62 files passed, 280 tests passed and 13 skipped. Type checking, new-test ESLint and diff whitespace checks passed. No paid API calls.
+
+## 2026-10-27: Conversation recovery and post-recording editing ideas
+
+- D20: Added concrete shared instructions for absent feelings, vague acknowledgments, short answers, dissatisfaction and corrections; aligned both styles. Preserve one question, approximate ten minutes, language, refusal and stopping; avoid character judgments and performance demands.
+- Only archive editing tools gain up to five exact-quote clip ideas with neighboring speech/estimated intervals, question markers and manual recovery review, plus JSON export. Include `editorial-review.json` in editing ZIPs. No extra APIs, automatic posting, platform connection or virality prediction.
+- Updated bilingual specification, playbook, evaluation, decision, sources and production workflow. Added six synthetic bilingual cases without copying participant logs/personal details.
+- Tests cover instruction delivery to new sessions and local processing, not model-generated replay, paid APIs, actual live voice or posting results. Existing logs and scripted demos remain unchanged.
+- Validation: all 61 test files passed, 276 tests passed and 13 skipped. Type check, changed-code ESLint, `git diff --check` and relative knowledge links passed. Fifteen new regression tests. Actual UI interaction remains unverified due to browser permissions.
+
+## 2026-10-26: Participant PDF and signature history
+
+- Discoverability fix: add a dedicated “Participant report & signature” archive button, scrolling directly to the signing/PDF section. Updated bilingual navigation and regression tests.
+
+- D19: Added archive signing and, after signature save, a combined analysis/extractive-summary/reference-counts PDF with all original receipt pages, using `pdf-lib`.
+- Retain earlier signatures for the same interview, showing signature images, timestamps, scope, original terms and receipts. Preserve issued PDF snapshots and show counts on archive lists.
+- Distinguish server consent save from local history save, with retries for local failures. Download only after PDF history save; detect changed dialogue/signature during generation.
+- Exclude new private fields from JSON. Disable real signing/issuance on dedicated demos. No automatic report email or cloud sync. Existing interview, analysis and consent terms unchanged.
+- Validation: all 60 test files passed, 261 tests passed and 13 skipped. Type check, changed-code ESLint and diff checks passed. Synthetic Japanese/English PDFs each have three pages; rendered charts, text, signature images and original receipt placement checked. Actual browser signing and real-device storage-exhaustion checks remain unperformed.
+- Generated and rendered bilingual synthetic PDFs. No actual history, real signing, paid APIs or real email. No actual browser operations bypassing denied permissions.
+
+## 2026-10-26: Per-conversation excerpts and JSON downloads
+
+- Added timestamps, IDs, counts, guest excerpts and direct JSON download buttons on archive lists/details (D18), without API calls or charges.
+- New JSON excludes removed speech, pre-correction text, signatures, preparation metadata, audio and raw events. Existing raw editing exports remain available.
+- Updated bilingual UI, specification and decision record. Interview, analysis and consent terms remain unchanged.
+- Results: all 59 test files passed, 255 tests passed and 13 skipped. Type check, ESLint on changed code and `git diff --check` passed; seven new conversation JSON tests.
+- Unit tests cover excerpts, ordering, times, private metadata exclusion, filenames, empty entries and UI placement. No actual history, recordings or paid APIs used. No browser verification bypassing denied access permissions.
+
 ## 2026-10-23: bilingual documentation and development rules
 
 - Added maintained English counterparts for the index, specification, playbook, evaluation proposal, decisions, source register and changelog.

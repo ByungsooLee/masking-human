@@ -67,6 +67,7 @@ export function useMockRealtimeInterview() {
     setListeningPhase("connecting");
     setUtterances([]);
     setSessionEstimatedUsd(0);
+    useRealtimeInterviewStore.getState().setUsageLedger(null);
     setMockScriptComplete(false);
 
     const trackRes = !isDemoOnly() ? await fetch("/api/usage/session", {

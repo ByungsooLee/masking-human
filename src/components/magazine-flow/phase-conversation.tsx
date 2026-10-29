@@ -42,8 +42,8 @@ export function PhaseConversation({ mockOnly }: Props) {
     startedRef.current = true;
     const offset = recorder.clock.elapsedMs();
     if (mockOnly) void mock.start({ sessionOffsetMs: offset, language: prepare.language });
-    else void live.start({ agentId: prepare.agentId, interviewLanguage: prepare.language, interviewerProfile: prepare.interviewerProfile, attachAiAudio: recorder.attachAiAudio, onTimeLimit: () => { void endRef.current?.(); }, getElapsedMs: () => recorder.clock.elapsedMs() });
-  }, [mockOnly, mock, live, prepare.agentId, prepare.language, prepare.interviewerProfile, recorder.clock, recorder.attachAiAudio]);
+    else void live.start({ agentId: prepare.agentId, interviewLanguage: prepare.language, interviewerProfile: prepare.interviewerProfile, realtimeModel: prepare.realtimeModel, attachAiAudio: recorder.attachAiAudio, onTimeLimit: () => { void endRef.current?.(); }, getElapsedMs: () => recorder.clock.elapsedMs() });
+  }, [mockOnly, mock, live, prepare.agentId, prepare.language, prepare.interviewerProfile, prepare.realtimeModel, recorder.clock, recorder.attachAiAudio]);
 
   useEffect(() => {
     const timer = setInterval(() => setTick(recorder.clock.elapsedMs()), 500);
@@ -64,7 +64,7 @@ export function PhaseConversation({ mockOnly }: Props) {
     const recordingBlob = await recorder.stop();
     const current = useMagazineFlowStore.getState();
     if (current.archiveId) {
-      try { await saveArchivedSession({ id: current.archiveId, savedAt: new Date().toISOString(), recordedAt: current.sessionStartedAt, prepare: current.prepare, transcript: current.transcript, draft: current.draft, slateAtMs: recorder.getSlateAtMs(), recordingBlob, audioStems: recorder.getAudioStems(), editingTimeline: recorder.getEditingTimeline(), analysisFeedback: current.analysisFeedback, releaseConsent: current.releaseConsent }); }
+      try { await saveArchivedSession({ id: current.archiveId, savedAt: new Date().toISOString(), recordedAt: current.sessionStartedAt, prepare: current.prepare, transcript: current.transcript, draft: current.draft, slateAtMs: recorder.getSlateAtMs(), recordingBlob, audioStems: recorder.getAudioStems(), editingTimeline: recorder.getEditingTimeline(), analysisFeedback: current.analysisFeedback, releaseConsent: current.releaseConsent, usageLedger: useRealtimeInterviewStore.getState().usageLedger }); }
       catch { setPhase("review"); return; }
     }
     setPhase("review");

@@ -4,7 +4,19 @@ Updated: 2026-10-23 (Japan time). Behavior reconciliation baseline: `e81bcb3` (m
 
 This is the starting point for developing an app that uses cosmetics as an opening to hear about a person's daily life, memories, choices and values in their own words. Product reviews, psychological diagnosis and collecting moving stories are not success criteria.
 
+D21 (2026-10-27): Following another transcript review, update [narrative entry and focus exit](production-conversations.md). Follow events rather than demand absent memories or special feelings; distinguish instructions from demonstrated live quality.
+
+D22: [Compact instructions, varied directions and per-response usage](production-conversations.md). Compare usage breakdowns in history without conflating prompt length, conversation quality or total billing.
+
+D23: [Introduce the project first](production-conversations.md). Align purpose and the first question across bilingual live/demo openings; preserve later conversation rules.
+
+D24: Add [operator mini/standard comparison](production-conversations.md). Select before starting and manually compare actual model/cost in history. No automated live-quality evaluation or savings guarantee.
+
+D25: Add [local repetition detection and short context notes](production-conversations.md). No extra AI call, but note input tokens, false positives and misses remain.
+
 ## Reading order
+
+For D20, also see [Better conversations and publication editing](production-conversations.md). Distinguish text markers/synthetic checks from live voice and actual post performance.
 
 1. [Current specification](current-spec.md): the current experience, implementation locations and limits.
 2. [Interview playbook](interview-playbook.md): choosing the next question, situational responses and corrected fictional examples.

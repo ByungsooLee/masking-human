@@ -17,6 +17,8 @@ import {
 import { buildRealtimeSessionConfig } from "@/lib/realtime/session-payload";
 import { patchUsageSession } from "@/lib/usage/client-session-sync";
 import { extractResponseDoneUsage } from "@/lib/usage/report-response-done";
+import { createUsageLedger, usageEntryFromEvent, type PromptMetadata } from "@/lib/usage/response-ledger";
+import { createDialogueGuard, dialogueGuardEvent } from "@/lib/realtime/dialogue-guard";
 import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 import type { InterviewerAgentId, InterviewLanguage, InterviewerProfile } from "@/lib/magazine-flow/types";
 import { useSessionTimeLimit } from "./use-session-time-limit";
@@ -26,6 +28,7 @@ export type RealtimeStartOptions = {
   agentId?: InterviewerAgentId;
   interviewLanguage?: InterviewLanguage;
   interviewerProfile?: InterviewerProfile;
+  realtimeModel?: import("@/lib/realtime/model-options").SelectableRealtimeModel;
   attachAiAudio?: (stream: MediaStream) => void;
   onTimeLimit?: () => void;
   getElapsedMs?: () => number;
@@ -77,7 +80,7 @@ export function useRealtimeInterview() {
       /* ignore */
     }
     if (usageId && patchToken) {
-      await patchUsageSession(usageId, patchToken, { ended: true });
+      await patchUsageSession(usageId, patchToken, { ended: true }).catch(() => null);
     }
     timingRef.current = createUtteranceTimingState();
     resetAiTimingCursor();
@@ -104,6 +107,8 @@ export function useRealtimeInterview() {
     elapsedRef.current = startOptions?.getElapsedMs ?? (() => Date.now());
     setUtterances([]);
     setSessionEstimatedUsd(null);
+    setUsageSessionId(null);
+    useRealtimeInterviewStore.getState().setUsageLedger(null);
 
     try {
       const res = await fetch("/api/session", {
@@ -115,6 +120,7 @@ export function useRealtimeInterview() {
         clientSecret?: string;
         model?: string;
         instructions?: string;
+        promptMetadata?: PromptMetadata;
         voice?: string;
         sessionId?: string;
         patchToken?: string;
@@ -126,6 +132,8 @@ export function useRealtimeInterview() {
         throw new Error(data.detail ?? data.error ?? copyRef.current.connectionFailed);
       }
       const model = data.model ?? DEFAULT_REALTIME_MODEL;
+      useRealtimeInterviewStore.getState().setUsageLedger(createUsageLedger(model, data.promptMetadata ?? null));
+      const reportedResponses = new Set<string>();
       if (data.sessionId && data.patchToken) {
         usageSessionIdRef.current = data.sessionId;
         usagePatchTokenRef.current = data.patchToken;
@@ -158,10 +166,25 @@ export function useRealtimeInterview() {
         config: buildRealtimeSessionConfig(startOptions?.interviewLanguage ?? "ja"),
       });
 
+      const dialogueGuard = createDialogueGuard();
+      const completedAiItems = new Set<string>();
+      const guideNextTurn = () => {
+        if (sessionRef.current !== session) return;
+        const notice = dialogueGuard.observe(useRealtimeInterviewStore.getState().utterances, completedAiItems);
+        if (notice) {
+          try {
+            session.transport.sendEvent(dialogueGuardEvent(notice));
+            const ledger = useRealtimeInterviewStore.getState().usageLedger;
+            if (ledger) useRealtimeInterviewStore.getState().setUsageLedger({ ...ledger, dialogueGuidance: [...(ledger.dialogueGuidance ?? []), { afterItemId: notice.afterItemId, reason: notice.reason, atMs: elapsedRef.current() }] });
+          }
+          catch { return; }
+        }
+      };
       session.on("history_updated", (history) => {
         setUtterances(
           historyToUtterances(history, timingRef.current, Date.now(), elapsedRef.current),
         );
+        guideNextTurn();
       });
 
       session.on("audio_start", () => {
@@ -176,16 +199,24 @@ export function useRealtimeInterview() {
       });
 
       session.on("transport_event", (event) => {
+        if (useRealtimeInterviewStore.getState().usageSessionId !== data.sessionId) return;
+        const usageEntry = usageEntryFromEvent(event, model, elapsedRef.current());
+        if (usageEntry) useRealtimeInterviewStore.getState().recordUsage(usageEntry);
+        if (usageEntry?.kind === "response" && usageEntry.status === "completed") {
+          for (const itemId of usageEntry.outputItemIds) completedAiItems.add(itemId);
+          guideNextTurn();
+        }
         const inputState = inputStateFromTransportEvent(event);
         if (inputState) useRealtimeInterviewStore.getState().setInputState(inputState);
         applyTimingFromTransportEvent(event, timingRef.current, elapsedRef.current());
         const usage = extractResponseDoneUsage(event);
         const sid = usageSessionIdRef.current;
         const patchToken = usagePatchTokenRef.current;
-        if (!usage || !sid || !patchToken) return;
-        void patchUsageSession(sid, patchToken, { usage }).then((usd) => {
-          if (typeof usd === "number") setSessionEstimatedUsd(usd);
-        });
+        if (!usage || !sid || !patchToken || !usageEntry || reportedResponses.has(usageEntry.id)) return;
+        reportedResponses.add(usageEntry.id);
+        void patchUsageSession(sid, patchToken, { usage, responseId: usageEntry.id }).then((usd) => {
+          if (typeof usd === "number" && useRealtimeInterviewStore.getState().usageSessionId === sid) setSessionEstimatedUsd(Math.max(usd, useRealtimeInterviewStore.getState().sessionEstimatedUsd ?? 0));
+        }).catch(() => undefined);
       });
 
       sessionRef.current = session;

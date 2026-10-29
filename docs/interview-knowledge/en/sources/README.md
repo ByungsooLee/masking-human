@@ -2,6 +2,28 @@
 
 Updated: 2026-10-23. R references were reconciled against `e81bcb3`. Linked files may change later; review the decision record with future changes.
 
+D21 additional sources, opened on 2026-10-27:
+- W5: [National Park Service: Interviewing](https://www.nps.gov/articles/000/oral-history-resources-interviewing.htm). Narrator-centered listening, one question, events/decisions, brief transition context and memory cues. Not experimental proof of longer answers.
+- W6: [StoryCorps conversation tips](https://storycorps.org/participate/tips-for-a-great-conversation/). Open story invitations, subsequent events and following the participant rather than a script. Does not justify invented shared memories or embodied AI experience.
+- W7: [OpenAI: Prompting Realtime models](https://developers.openai.com/api/docs/guides/voice-prompting). Goals, transitions, exit criteria and examples; no model/SDK migration or execution guarantee.
+
+D21 lives in the shared prompt, five synthetic cases in `eval/interviewer-story-cases.json` and delivery tests in `tests/interviewer-story.test.ts`. Causal effects on answer length or social reach remain unverified.
+
+- W8: [OpenAI Realtime costs](https://developers.openai.com/api/docs/guides/voice-latency-cost?voice-api=realtime), opened 2026-10-27. Distinguishes response.done usage/cache from separately billed input transcription. D22 records observations without extra calls, not an invoice replacement. Implementation: `src/lib/usage/response-ledger.ts`, `src/components/live/history-usage.tsx`, voice hook and archive persistence. Tests: `tests/response-ledger.test.ts`. W7 also informs compact shared/style instructions.
+
+- W9: [Official GPT-Realtime-2.1 Mini model](https://developers.openai.com/api/docs/models/gpt-realtime-2.1-mini), opened 2026-10-27. D24 adds this explicit choice; distinguish published information from measured price/quality/account access. Implementation: `src/lib/realtime/model-options.ts`, `session-payload.server.ts`, `src/components/live/model-comparison-settings.tsx` and preparation/start/API path. Tests: `tests/realtime-model-selection.test.ts`.
+
+- W10: [OpenAI Realtime conversations](https://developers.openai.com/api/docs/guides/realtime-conversations), opened 2026-10-27. D25 appends system/input_text via conversation.item.create without another response.create. Implementation: `src/lib/realtime/dialogue-guard.ts` and voice hook; tests: `tests/dialogue-guard.test.ts`. Local-operation references: [Ollama FAQ](https://docs.ollama.com/faq), [whisper.cpp](https://github.com/ggml-org/whisper.cpp), [Piper](https://github.com/OHF-Voice/piper1-gpl). Not verified app integration, device performance, Japanese voice quality or license suitability.
+
+## Primary sources researched on 2026-10-27
+
+- W1: [OpenAI Realtime Prompting Guide](https://developers.openai.com/cookbook/examples/realtime_prompting_guide). Informs clear instructions, repetition avoidance and state transitions; not a model migration or proof of this app's quality.
+- W2: [University of Leicester interviewing guide](https://le.ac.uk/emoha/what-is-oral-history/how-to-do-oral-history/interviewing/questions). Open questions, specificity, follow-ups, non-leading practice and participant pace; not evidence of viral reach.
+- W3: [YouTube audience retention](https://support.google.com/youtube/answer/9314415) and [Shorts discovery](https://support.google.com/youtube/answer/11914225?co=YOUTUBE._YTVideoType%3Dshorts&hl=en-GB). Matching openings/content and watching behavior inform post-recording experiments, not optimal-duration or view-count guarantees.
+- W4: [Meta Reels Insights explanation](https://about.fb.com/news/2023/04/instagram-reels-trending-audio-and-gifts-updates/). A 2023 feature explanation informing watch-time comparisons, not current ranking-weight evidence.
+
+D20 implementation: `prompts/interviewer.md`, `src/lib/archive/editorial-review.ts`, `src/components/live/history-editorial-review.tsx`. Synthetic cases: `eval/interviewer-recovery-cases.json`; instruction/processing tests: `tests/editorial-review.test.ts`. See [production workflow](../production-conversations.md) for procedures and limits.
+
 ## Received material
 
 **S1: [Original Japanese NotebookLM export](../../sources/2026-10-23-notebooklm-export.md)**

@@ -1,5 +1,6 @@
 import type { ListeningPhase, Utterance } from "./types";
 import { englishMockText } from "./mock-conversation-en";
+import { INTERVIEW_OPENING } from "./interview-opening";
 
 type MockStep =
   | { kind: "phase"; phase: ListeningPhase; delayMs: number }
@@ -43,7 +44,7 @@ const MOCK_STEPS: MockStep[] = [
     utterance: {
       id: "mock-ai-1",
       speaker: "ai",
-      text: "最近よく使っているコスメを、ひとつ教えてください。",
+      text: INTERVIEW_OPENING.ja,
     },
   },
   { kind: "phase", phase: "guest_may_speak", delayMs: 800 },

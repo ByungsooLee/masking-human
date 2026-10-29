@@ -2,6 +2,16 @@
 
 Updated: 2026-10-23. The observation criteria and acceptance conditions below are a **proposed evaluation framework**. They are neither a validated measurement scale nor an implemented automatic judge. [S1, R9]
 
+D21 (2026-10-27): An additional real text-log review distinguishes question presence from narrative progress. Observe whether participants provide an event's sequence, their action and outcome, can finish their account, and are not pressed for absent memories or assigned invented connections. Do not score short answers or total length as failure; respect refusal. The five bilingual cases in `eval/interviewer-story-cases.json` are synthetic and intended for human review. `tests/interviewer-story.test.ts` checks instruction delivery across both styles/languages and existing marker limitations, not generated semantic quality.
+
+D22: `tests/response-ledger.test.ts` covers synthetic usage/deduplication/exports/privacy; existing persistence tests cover ledger retention on result resaves. A prompt character ceiling prevents bloat, not a token-savings or quality acceptance test. Human review must check guest-appropriate direction changes and repetitive scene requests. Live-model quality and actual bills remain unverified. Compare model/prompt hash/revision in usage JSON and account separately for unpriced transcription and missing costs.
+
+D23: `tests/interviewer-session.test.ts` checks both styles/languages for purpose before product, one question and first-turn-only instructions. `tests/mock-conversation.test.ts` checks the bilingual first line appears once. These checks do not establish spoken delivery or reduced boredom.
+
+D24: `tests/realtime-model-selection.test.ts` checks allowlisting, server defaults, unchanged instructions/voice, upstream/usage consistency for both models, invalid requests, persistence and bilingual UI. Upstream API is stubbed without charges. For quality comparisons, record language/topic/length/prompt revision and evaluate repetition, context, naturalness, waiting and cost separately. Cheap does not imply good; live results remain unverified.
+
+D25: `tests/dialogue-guard.test.ts` uses synthetic utterances for repeat candidates, answer excerpts, Japanese/English matching, incomplete/excluded/refused cases, deduplication, cooldown/cap and non-generation events. It does not score semantic understanding, next-question improvement or live delivery. Evaluate reduced repetition, preserved legitimate probing and token overhead separately using dialogueGuidance, usage and audio.
+
 ## Observation criteria
 
 | Dimension | Good | Acceptable | Needs improvement |
@@ -31,6 +41,10 @@ A single turn with multiple focuses or invented feelings still needs correction.
 | Japanese, English, another language in English mode | Distinguishes interview-language instructions from UI language |
 
 ## Existing validation assets and limits
+
+- D20 (2026-10-27): `eval/interviewer-recovery-cases.json` contains six synthetic Japanese/English cases. `tests/editorial-review.test.ts` verifies instruction delivery to both styles, text markers on negative examples, and clip exclusions/context/timing/placement. It is neither model-generated replay nor an automatic pass/fail judge.
+- Local history markers cover punctuation/request phrases, interpretive expressions and exact repetition only. Closings/quotes can create false positives. Zero markers does not mean a pass; humans must assess recovery against original audio/context.
+- For the next live comparison, separately record model, actual instruction version, language and start time, then assess non-leading behavior, context, progress and participant choice. Log posting outcomes over equal observation windows separately; view counts are not conversation-quality scores. Agree on permission and an API cost cap first.
 
 - `tests/interviewer-session.test.ts`: common prompt, style and session instruction consistency.
 - `tests/self-analysis-map.test.ts`, `tests/analysis-findings.test.ts`, `tests/final-analysis-flow.test.ts`: evidence, classification and review flow.

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { isSelectableRealtimeModel } from "@/lib/realtime/model-options";
 import type { SignedRelease } from "@/lib/consent/release";
 import type {
   ExportAspect,
@@ -34,6 +35,7 @@ function loadPrepareDefaults(): PrepareState {
     return {
       ...defaultPrepare,
       ...parsed,
+      realtimeModel: isSelectableRealtimeModel(parsed.realtimeModel) ? parsed.realtimeModel : undefined,
       includeCamera: false,
       consents: { ...defaultPrepare.consents, ...parsed.consents },
     };
@@ -106,6 +108,7 @@ export const useMagazineFlowStore = create<MagazineFlowState>((set, get) => ({
         language: prepare.language,
         agentId: prepare.agentId,
         interviewerProfile: prepare.interviewerProfile,
+        realtimeModel: prepare.realtimeModel,
         includeCamera: prepare.includeCamera,
       }),
     );

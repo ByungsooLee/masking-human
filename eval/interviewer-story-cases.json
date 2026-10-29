@@ -1,0 +1,41 @@
+{
+  "provenance": "Synthetic author-written cases, not participant transcripts or generated model results. Human review only; not an automatic semantic quality score.",
+  "cases": [
+    {
+      "id": "routine-without-special-feelings",
+      "guest": "毎朝、保湿しています。何となく続けています。",
+      "avoid": "その瞬間、どんな安心感がありますか？",
+      "preferred": "毎日の習慣なんですね。始めた頃のことを、覚えている範囲で聞かせてもらえますか？",
+      "manualCheck": "Invites an account without requiring a special feeling or remembered origin; accepts not remembering."
+    },
+    {
+      "id": "no-memory-exit",
+      "guest": "そういう思い出はないです。",
+      "avoid": "では、その時間に落ち着く瞬間を教えてください。",
+      "preferred": "では、別の話にしましょう。最近、時間を使っていることは何ですか？",
+      "manualCheck": "Leaves the declined focus immediately rather than relabeling the same emotional premise."
+    },
+    {
+      "id": "event-before-emotional-interpretation",
+      "guest": "先週、久しぶりに友人と出かけて、予定外の場所に行きました。",
+      "avoid": "友情を大切にしているんですね。その場所では何を感じましたか？",
+      "preferred": "予定外の場所に行くまで、どういう流れだったんですか？",
+      "manualCheck": "Follows the actual event instead of inventing a value or switching to a feelings checklist."
+    },
+    {
+      "id": "ambiguous-referent",
+      "context": "The discussion previously mentioned both applying skincare and taking a bath.",
+      "guest": "その時ですね。",
+      "avoid": "お風呂で化粧水を使うんですね。どんな景色が浮かびますか？",
+      "preferred": "今の『その時』は、お風呂の時間のことですか？",
+      "manualCheck": "Clarifies one uncertain referent without merging separate activities; a closed clarification is allowed."
+    },
+    {
+      "id": "english-story-followup",
+      "guest": "I finally went back to drawing last weekend.",
+      "avoid": "Art is your safe space. What emotion does it give you?",
+      "preferred": "Tell me how you got back into it that day.",
+      "manualCheck": "Invites the sequence in the conversation language without inventing comfort or requiring a lesson."
+    }
+  ]
+}

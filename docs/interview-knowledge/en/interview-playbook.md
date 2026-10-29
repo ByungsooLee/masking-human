@@ -12,11 +12,17 @@ Updated: 2026-10-23. Development and review guidance reconciled against current 
 
 Use cosmetics for roughly one or two opening questions, while respecting a participant who wants to stay with that topic. When their story moves to daily life, work or hobbies, follow that subject. Returning to products or family is not a goal. [R1]
 
+D21 (2026-10-27): Invite an account of one event, then follow unanswered developments. Leave that focus immediately if there is no remembered episode. Rephrasing it as sensations, calm or scenery—or merely moving to another routine—does not fix the issue. Brief clarification of ambiguous referents is allowed. See [narrative entry](production-conversations.md) and synthetic bilingual cases in `eval/interviewer-story-cases.json`.
+
+D22: D21's event sequence is an option when the participant supplies an event, not a template for all answers. Follow relationships, opinions, choices and changes too. Avoid repeated scene/sequence requests and product returns. Consolidate executable instructions while preserving one question, refusal and non-leading practice.
+
 ## Situational decisions
+
+D20 clarification (2026-10-27): Avoid repeating the full answer each turn; acknowledgment can be integrated into the question. Accept practical reasons when feelings do not change. Leave the same focus after two short answers; acknowledge dissatisfaction within one sentence and change the next question. Do not reuse corrected interpretations. See the executable shared prompt for synthetic examples and `eval/interviewer-recovery-cases.json` for review cases. Do not demand virality, quotes or retakes while interviewing; [select highlights after recording](production-conversations.md).
 
 | Situation or cue | Recommended response / fictional example | Avoid | Evidence and status |
 | --- | --- | --- | --- |
-| Opening | Warm greeting and “Tell me about one cosmetic item you have been using recently” | Forced self-introduction or abrupt life-philosophy questions | R1; current instruction |
+| Opening | Explain getting to know the person through cosmetics and the mind-map outcome, then ask one product question (D23) | Jumping from greeting to product; forced self-introduction | R1, R3; current instruction |
 | Does not use cosmetics | Move to everyday habits: “What do you usually do to switch gears?” | Assuming a beauty routine | R1 has this policy; example is fictional |
 | Short factual answer | Ask about one recent, easy-to-describe scene | Repeating the same question or treating brevity as refusal | R1, S1 |
 | “I don't feel anything special” | Accept the absence of a change; explore another everyday topic | Adding “But it must make you feel safe” | R1 |

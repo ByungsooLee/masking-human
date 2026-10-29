@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
-import { getOpenAiApiKey, getRealtimeModel } from "@/lib/realtime/config";
+import { getOpenAiApiKey } from "@/lib/realtime/config";
+import { SELECTABLE_REALTIME_MODELS } from "@/lib/realtime/model-options";
 import { buildRealtimeClientSecretSession } from "@/lib/realtime/session-payload.server";
 import { safeErrorMessage } from "@/lib/logging/safe-log";
 import { buildUsageSummary } from "@/lib/usage/summary";
 import { createSessionRecord } from "@/lib/usage/session-usage-store";
 import { z } from "zod";
+import { createHash } from "node:crypto";
 
 const BodySchema = z
   .object({
     agentId: z.enum(["default", "reflective"]).optional(),
     interviewLanguage: z.enum(["ja", "en"]).optional(),
+    realtimeModel: z.enum(SELECTABLE_REALTIME_MODELS).optional(),
     interviewerProfile: z.object({
       age: z.enum(["young", "adult", "senior"]),
       gender: z.enum(["woman", "man", "neutral"]),
@@ -42,13 +45,13 @@ export async function POST(req: Request) {
     const json = await req.json();
     body = BodySchema.parse(json);
   } catch {
-    body = undefined;
+    return NextResponse.json({ error: "Invalid interview settings." }, { status: 400 });
   }
 
-  const model = getRealtimeModel();
+  const sessionConfig = buildRealtimeClientSecretSession(body);
+  const model = sessionConfig.model;
   const record = createSessionRecord({ model, isMock: false });
 
-  const sessionConfig = buildRealtimeClientSecretSession(body);
   try {
     const response = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
       method: "POST",
@@ -75,6 +78,7 @@ export async function POST(req: Request) {
       clientSecret: data.value,
       model,
       instructions: sessionConfig.instructions,
+      promptMetadata: { revision: "2026-10-27.4", sha256: createHash("sha256").update(sessionConfig.instructions).digest("hex"), characters: Array.from(sessionConfig.instructions).length },
       voice: sessionConfig.audio.output.voice,
       sessionId: record.sessionId,
       patchToken: record.patchToken,

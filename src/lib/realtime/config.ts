@@ -6,8 +6,8 @@ export const DEFAULT_REALTIME_VOICE = "marin";
 /** Wall-clock limit for one live or mock session. */
 export const REALTIME_SESSION_DURATION_MS = 10 * 60 * 1000;
 
-export function getRealtimeModel(): string {
-  return process.env.OPENAI_REALTIME_MODEL?.trim() || DEFAULT_REALTIME_MODEL;
+export function getRealtimeModel(requested?: import("./model-options").SelectableRealtimeModel): string {
+  return requested ?? (process.env.OPENAI_REALTIME_MODEL?.trim() || DEFAULT_REALTIME_MODEL);
 }
 
 export function getOpenAiApiKey(): string | undefined {
