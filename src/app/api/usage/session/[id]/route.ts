@@ -8,7 +8,6 @@ import {
 } from "@/lib/usage/session-usage-store";
 import { authorizeSessionPatch } from "@/lib/usage/authorize-session-patch";
 import { estimateUsdFromSnapshot } from "@/lib/usage/estimate-cost";
-import { emptyUsageSnapshot } from "@/lib/usage/normalize-usage";
 
 type PatchBody = {
   usage?: RawRealtimeUsage;

@@ -26,7 +26,7 @@ describe("closing and boundary conditions", () => {
   });
 
   it("closing answer marks session completed", async () => {
-    let session = (await startInterview("E", provider)).session;
+    const session = (await startInterview("E", provider)).session;
     session.currentStage = "closing";
     session.awaitingClosingAnswer = true;
     session.turns.push({

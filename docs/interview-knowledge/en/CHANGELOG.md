@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-30: Restating cut questions, response cancellation and legacy UI removal (D35)
+
+- In Realtime, when only a short acknowledgement or noise cuts off the AI's question, restate it once without counting an answer. Treat only a rejected own `response.create` or a transport error as failure; on failure, cancel the response and clear playback. Late stale responses are identified by `metadata` and cancelled (whether the server echoes `metadata` is unverified against the live API).
+- In the low-cost pipeline, still answer a queued answer when the noise segment behind it transcribes to empty. Separate missing storage configuration, storage failures and unexpected errors into distinct codes.
+- Remove the legacy UI no page used (`live-interview`, `voice-interview`, `interview-chat`, components only they used, and the cinema/cosme themes). Full ESLint reports no problems; the Vitest config is now ESM `.mts`.
+- Validation: 74 test files, 377 passed and 13 skipped; type check, full ESLint and production build passed (first build stopped on the known Next.js security warning; retry succeeded; upgrade still open). No paid API or live-device audio.
+
 ## 2026-10-30: Key limits, WebRTC playback sync and recovery (D34)
 
 - Preflight the normal OpenRouter key's spending limit instead of account credits. Use actual installed SDK WebRTC events and response IDs to detect playback completion; keep the opening microphone muted until then. Add explicit resume without automatic retries on errors.
