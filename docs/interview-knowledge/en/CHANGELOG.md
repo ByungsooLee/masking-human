@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-30: Fresh startup sessions (D32)
+
+- Save new sessions and selected initial consents together, removing stale-ID/browser-storage dependence. Distinguish authentication, storage and audio activation errors. No paid API calls; saved browser permissions prevented verification on the actual screen.
+
+## 2026-10-30: External-review authentication and voice-stall fixes (D31)
+
+- Add durable login limits, separate signing keys, logout, public origin, production storage opt-in and corrected admin authentication routing.
+- Test empty-transcription recovery, between-sentence interruption, final untranscribed intervals and reply 404 fallback. Update bilingual specification, configuration and remaining limitations. No paid API calls.
+- Validation: 71 files, 349 tests passed and 13 skipped; type, scoped ESLint and whitespace checks passed. Isolated PGlite verified migration 007 per-sender/global caps, expiry and anon denial; not applied to production. Build initially stopped on the existing Next.js security warning and succeeded on retry. Upgrade remains recommended.
+
+## 2026-10-30: Explicit login feedback (D28)
+
+- Show status in the collapsed heading, with distinct success/failure/loading feedback and the next action. Verify authenticated access, prevent duplicate submission, add timeouts and Enter submission. Test bilingual states/errors.
+
+## 2026-10-30: Low-cost voice and always-visible spending (D26)
+
+- Add optional OpenRouter STT/fixed LLM/one backup/fixed voice TTS. Connect shared microphone/timing, interruption and sentence prefetch to existing recording.
+- Add cost breakdowns, monthly reservations, unresolved holds, history/JSON, operator API access and shared Supabase accounting. Remove legacy text generation from initial consent storage.
+- Update bilingual setup/spec/decisions/evaluation. No live voice/Supabase/paid API/invoice validation. Realtime stays the default.
+- Validation: 70 files, 332 tests passed and 13 skipped. Type check, changed-scope ESLint, whitespace and documentation links passed. PGlite checked SQL reserve/settlement, revisions and anonymous denial. Local `/live` returned HTTP 200 with the selector; anonymous API returned 401. Existing Next.js stopped one build with SecurityFatalError; retry exited 0, with the upgrade warning remaining. Distinguish these from browser interaction/live voice.
+
 ## 2026-10-27: Dialogue guard without another AI call (D25)
 
 - Validation: 65 files/312 tests passed, 13 skipped. Type check, changed-file ESLint and diff whitespace passed. Twelve synthetic guard cases. No live voice, browser interaction or paid model calls.

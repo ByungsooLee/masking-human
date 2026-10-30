@@ -1,5 +1,7 @@
 # Source register
 
+D26 (2026-10-30): [Low-cost engine primary sources and implementation](../low-cost-voice.md). Check OpenRouter's official STT/TTS contracts and public text/transcription/speech catalogs. Code: `src/lib/pipeline/`; API: `src/app/api/pipeline/`; validation: `tests/pipeline*.test.ts`. These do not establish live quality or actual billing.
+
 Updated: 2026-10-23. R references were reconciled against `e81bcb3`. Linked files may change later; review the decision record with future changes.
 
 D21 additional sources, opened on 2026-10-27:

@@ -4,6 +4,8 @@
 
 ## 開発資料
 
+低コスト音声方式・常時料金表示の設定は [OpenRouterの設定手順](docs/interview-knowledge/low-cost-voice.md)（[English](docs/interview-knowledge/en/low-cost-voice.md)）を参照してください。準備画面で比較用に選択でき、APIキー・運営者パスワードのサーバー設定が必要です。
+
 現行仕様、質疑応答のノウハウ、品質評価、未決事項と出典は [インタビュー開発ナレッジ](docs/interview-knowledge/README.md) にまとめています（2026-10-23更新）。[English documentation](docs/interview-knowledge/en/README.md) も用意しています。開発前に `AGENTS.md` と [必読・変更手順](docs/interview-knowledge/development-workflow.md) を確認し、仕様と日英資料をそろえて更新してください。
 
 ## 起動

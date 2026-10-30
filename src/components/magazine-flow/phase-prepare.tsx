@@ -1,5 +1,8 @@
 "use client";
 import { ModelComparisonSettings } from "@/components/live/model-comparison-settings";
+import { InterviewEngineSettings } from "@/components/live/interview-engine-settings";
+import { pipelineError } from "@/lib/pipeline/copy";
+import { useRecordingSession } from "@/contexts/recording-session-context";
 
 import { useMemo, useState } from "react";
 import { ThoughtGraph } from "@/components/graph/thought-graph";
@@ -16,6 +19,7 @@ type Props = { mockOnly: boolean; onStartDemo: () => void };
 
 export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
   const ui = useMagazineFlowUi();
+  const recorder = useRecordingSession();
   const prepare = useMagazineFlowStore((s) => s.prepare);
   const setPrepare = useMagazineFlowStore((s) => s.setPrepare);
   const persistPrepare = useMagazineFlowStore((s) => s.persistPrepare);
@@ -39,12 +43,27 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
     if (!canStart || busy) return;
     setBusy(true);
     setError(null);
-    const ok = await grantConsents({
+    try { await recorder.unlockAudio(); }
+    catch { setError(prepare.language === "en" ? "Could not enable audio. Check browser audio permissions and try again." : "音声を有効にできません。ブラウザの音声設定を確認し、もう一度開始してください。"); setBusy(false); return; }
+    if (prepare.interviewEngine === "pipeline") {
+      try {
+        const response = await fetch("/api/pipeline?preflight=1", { cache: "no-store" });
+        if (!response.ok) { const data = await response.json(); throw new Error(data.error); }
+        const data = await response.json();
+        if (data.cost.remainingUsd < 0.01) throw new Error("PIPELINE_BUDGET");
+      } catch (failure) {
+        setError(pipelineError(failure instanceof Error ? failure.message : "PIPELINE_STORAGE", prepare.language === "en"));
+        setBusy(false);
+        return;
+      }
+    }
+    let ok = false;
+    try { ok = await grantConsents({
       ai: prepare.consents.aiConversation,
       photoVideo: prepare.consents.photoVideo,
       recording: prepare.consents.recording,
       needInterviewSession: !mockOnly,
-    });
+    }); } catch (failure) { setError(pipelineError(failure instanceof Error && failure.message.startsWith("PIPELINE_") ? failure.message : "CONSENT_SAVE_FAILED", prepare.language === "en")); setBusy(false); return; }
     if (!ok && !mockOnly) {
       setError(ui.sessionFailed);
       setBusy(false);
@@ -99,7 +118,8 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
 
       <section className="flex flex-col gap-6 text-[length:var(--text-body)]">
         <h1 className="ui-heading">{ui.prepareHeading}</h1>
-        <ModelComparisonSettings value={prepare.realtimeModel} en={prepare.language === "en"} mockOnly={mockOnly} onChange={(realtimeModel) => { setPrepare({ realtimeModel }); persistPrepare(); }} />
+        <InterviewEngineSettings value={prepare.interviewEngine} en={prepare.language === "en"} mockOnly={mockOnly} onChange={(interviewEngine) => { setPrepare({ interviewEngine }); persistPrepare(); }} />
+        {prepare.interviewEngine !== "pipeline" && <ModelComparisonSettings value={prepare.realtimeModel} en={prepare.language === "en"} mockOnly={mockOnly} onChange={(realtimeModel) => { setPrepare({ realtimeModel }); persistPrepare(); }} />}
 
         <div className="ui-panel flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-[color:var(--color-ink-muted)]">
@@ -186,7 +206,7 @@ export function PhasePrepare({ mockOnly, onStartDemo }: Props) {
         <ul className="ui-panel flex flex-col gap-3">
           {(
             [
-              ["aiConversation", ui.consentAiStreet],
+              ["aiConversation", `${ui.consentAiStreet}${prepare.interviewEngine === "pipeline" ? (prepare.language === "en" ? " Audio and conversation text are sent to OpenRouter and its AI providers for processing." : " 音声・会話テキストは処理のためOpenRouterと接続先のAI事業者に送信されます。") : ""}`],
               ["recording", ui.consentRecordingStreet],
               ["snsPublish", prepare.language === "en" ? "I understand publication on YouTube / SNS is planned and final scope, commercial use and signature will be confirmed after the interview. Recording is permitted now; no publication without final signed consent." : "YouTube・SNSへの掲載予定を確認しました。記録を許可し、会話後に掲載範囲・商用利用等を確認して最終署名します。署名保存までは公開を許可しません。"],
             ] as const

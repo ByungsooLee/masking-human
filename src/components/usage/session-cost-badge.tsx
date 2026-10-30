@@ -23,7 +23,7 @@ export function SessionCostBadge({ estimatedUsd, pricingConfigured, inline = fal
       data-hide-from-recording={hideFromRecording ? "true" : "false"}
       aria-live="polite"
     >
-      {formatEstimatedUsd(estimatedUsd, pricingConfigured, language)}
+      {pricingConfigured && estimatedUsd !== null ? `${language === "en" ? "Estimate" : "推定"} $${estimatedUsd.toFixed(4)}` : formatEstimatedUsd(estimatedUsd, pricingConfigured, language)}
     </div>
   );
 }

@@ -8,6 +8,18 @@ Help participants describe concrete experiences and things that matter to them, 
 
 ## Participant experience: current implementation
 
+D32: Create a fresh session and save selected initial consents together on each start. Do not reuse old sessionStorage credentials. Distinguish authentication, storage and audio activation failures. Publication/signature consent conditions remain unchanged.
+
+D31: Harden low-cost authentication, empty-transcription recovery and untranscribed interval warnings. See [review hardening](low-cost-voice.md#review-hardening-d31-supersedes-older-details-below) for production configuration, migration 007 and remaining limitations. Prompts and consent conditions are unchanged.
+
+D30: Check OpenRouter balance before recording and on connection. Distinguish insufficient credits, key limits and failed balance checks from generic AI errors, explaining an unfunded account before recording starts.
+
+D29: Validate Origin against the browser-facing Host and protocol, avoiding false rejection caused by Next's internal localhost rewrite. Do not permit cross-site or different-port submissions.
+
+D28 (2026-10-30): Operator login displays checking/signed-out/signing-in/signed-in states in the collapsible heading. Verify the cookie with an authenticated request; show a green success panel and next step. Distinguish incorrect password, cookie failure and connection failure in both languages.
+
+D26 (2026-10-30): Preparation can select the [low-cost engine](low-cost-voice.md): OpenRouter STT → fixed text LLM → TTS. Existing Realtime stays the initial default. Preserve one-question/language/refusal/review/final-release rules and recording timing. Always show session/month OpenRouter costs, breakdowns and $1/80%/100% thresholds during conversation; retain them in history and usage JSON. Distinguish reported/estimated/unresolved amounts. Reserve against a default $10 monthly budget using shared Supabase or persistent local files with deduplication/concurrency protection. Configured operator access gates APIs. A dedicated initial-consent API replaces the legacy text engine's question-generation call. Preparation explains transmission to OpenRouter/providers. Live voice, actual costs and synchronization remain unverified; the new engine is not automatically promoted.
+
 2026-10-27 (D20): Preserve one question, four phases and participant choice, while avoiding full repetition and unconfirmed character judgments and following concrete scenes. Accept absent emotions, do not treat vague acknowledgments as agreement, and change the next question after two short answers, dissatisfaction or correction. Stopping takes priority; do not demand virality, tears or quotable lines. These are model instructions, not execution guarantees, applied to new live sessions only. Old logs and scripted demos remain unchanged.
 
 Preparation → synchronization cue → conversation and recording → transcript correction and exclusion → participant review of analysis candidates → final analysis and publication signature. Video and social-media exports are in archive details. `/` and `/voice` lead to `/live`. [R2, R5]

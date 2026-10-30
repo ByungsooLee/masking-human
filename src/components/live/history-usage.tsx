@@ -3,9 +3,11 @@
 import type { ArchivedSession } from "@/lib/archive/session-archive";
 import { buildUsageExport } from "@/lib/usage/response-ledger";
 import { downloadText } from "@/lib/magazine-flow/export-png";
+import { ArchivePipelineUsage } from "@/components/usage/archive-pipeline-usage";
 
 export function HistoryUsage({ session, en }: { session: ArchivedSession; en: boolean }) {
   const ledger = session.usageLedger;
+  if (ledger?.pipeline) return <ArchivePipelineUsage key={session.id} session={session} en={en} />;
   const responses = ledger?.entries.filter((entry) => entry.kind === "response") ?? [];
   const transcriptions = ledger?.entries.filter((entry) => entry.kind === "transcription") ?? [];
   const knownTotal = responses.reduce((total, entry) => total + (entry.estimatedUsd ?? 0), 0);

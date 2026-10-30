@@ -26,6 +26,7 @@
 .DS_Store
 *.pem
 /private-consents/
+/private-usage/
 
 # debug
 npm-debug.log*

@@ -1,5 +1,7 @@
 # Conversation quality and validation
 
+D26 (2026-10-30): `tests/pipeline*.test.ts` uses synthetic/stubbed budget concurrency, persistence, Supabase revision conflicts, authentication, backup routing, uncertainty, VAD, sentence speech, final transcription on shutdown, stopping during initialization and bilingual costs. Actual voice models/database/invoices/browser remain unverified. Before promotion, compare ten-minute interviews in both languages for question quality, speech-end-to-first-audio delay, playback leakage, interruption, recording alignment and actual cost. See [setup and validation](low-cost-voice.md).
+
 Updated: 2026-10-23. The observation criteria and acceptance conditions below are a **proposed evaluation framework**. They are neither a validated measurement scale nor an implemented automatic judge. [S1, R9]
 
 D21 (2026-10-27): An additional real text-log review distinguishes question presence from narrative progress. Observe whether participants provide an event's sequence, their action and outcome, can finish their account, and are not pressed for absent memories or assigned invented connections. Do not score short answers or total length as failure; respect refusal. The five bilingual cases in `eval/interviewer-story-cases.json` are synthetic and intended for human review. `tests/interviewer-story.test.ts` checks instruction delivery across both styles/languages and existing marker limitations, not generated semantic quality.

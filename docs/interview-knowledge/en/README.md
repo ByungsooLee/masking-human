@@ -1,5 +1,9 @@
 # Interview development knowledge
 
+D31 (2026-10-30): [Review hardening](low-cost-voice.md), including the extra session secret, migration 007, device checks and unresolved-charge limitations before public deployment.
+
+D26 (2026-10-30): [Low-cost voice and always-visible costs](low-cost-voice.md). Add an optional OpenRouter STT/fixed-LLM/TTS engine with reservations, shared accounting and operator access; distinguish implementation from live voice and invoice validation.
+
 Updated: 2026-10-23 (Japan time). Behavior reconciliation baseline: `e81bcb3` (main). Documentation governance update baseline: `8150a26`.
 
 This is the starting point for developing an app that uses cosmetics as an opening to hear about a person's daily life, memories, choices and values in their own words. Product reviews, psychological diagnosis and collecting moving stories are not success criteria.

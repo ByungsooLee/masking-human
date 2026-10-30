@@ -5,6 +5,7 @@ import { ConversationWorkspace } from "@/components/live/conversation-workspace"
 import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 import { useMockRealtimeInterview } from "@/hooks/use-mock-realtime-interview";
 import { useRealtimeInterview } from "@/hooks/use-realtime-interview";
+import { usePipelineInterview } from "@/hooks/use-pipeline-interview";
 import { useRecordingSession } from "@/contexts/recording-session-context";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
@@ -24,8 +25,10 @@ export function PhaseConversation({ mockOnly }: Props) {
   const setPhase = useMagazineFlowStore((state) => state.setPhase);
   const recorder = useRecordingSession();
   const live = useRealtimeInterview();
+  const pipeline = usePipelineInterview();
   const mock = useMockRealtimeInterview();
-  const active = mockOnly ? mock : live;
+  const pipelineMode = !mockOnly && prepare.interviewEngine === "pipeline";
+  const active = mockOnly ? mock : pipelineMode ? pipeline : live;
   const utterances = useRealtimeInterviewStore((state) => state.utterances);
   const listeningPhase = useRealtimeInterviewStore((state) => state.listeningPhase);
   const mockScriptComplete = useRealtimeInterviewStore((state) => state.mockScriptComplete);
@@ -41,9 +44,17 @@ export function PhaseConversation({ mockOnly }: Props) {
     if (startedRef.current) return;
     startedRef.current = true;
     const offset = recorder.clock.elapsedMs();
-    if (mockOnly) void mock.start({ sessionOffsetMs: offset, language: prepare.language });
+    if (mockOnly) {
+      useRealtimeInterviewStore.getState().setUsageLedger(null);
+      void mock.start({ sessionOffsetMs: offset, language: prepare.language });
+    }
+    else if (pipelineMode) {
+      const input = recorder.getAudioInput();
+      if (!input.stream || !input.context) { useRealtimeInterviewStore.getState().setError(prepare.language === "en" ? "Microphone recording is unavailable." : "マイクの録音に接続できません。"); return; }
+      void pipeline.start({ settings: { agentId: prepare.agentId, interviewLanguage: prepare.language, interviewerProfile: prepare.interviewerProfile }, stream: input.stream, context: input.context, attachAiAudio: recorder.attachAiAudio, elapsed: () => recorder.clock.elapsedMs(), onTimeLimit: () => { void endRef.current?.(); } });
+    }
     else void live.start({ agentId: prepare.agentId, interviewLanguage: prepare.language, interviewerProfile: prepare.interviewerProfile, realtimeModel: prepare.realtimeModel, attachAiAudio: recorder.attachAiAudio, onTimeLimit: () => { void endRef.current?.(); }, getElapsedMs: () => recorder.clock.elapsedMs() });
-  }, [mockOnly, mock, live, prepare.agentId, prepare.language, prepare.interviewerProfile, prepare.realtimeModel, recorder.clock, recorder.attachAiAudio]);
+  }, [mockOnly, mock, live, pipelineMode, pipeline, prepare.agentId, prepare.language, prepare.interviewerProfile, prepare.realtimeModel, recorder]);
 
   useEffect(() => {
     const timer = setInterval(() => setTick(recorder.clock.elapsedMs()), 500);
@@ -61,6 +72,7 @@ export function PhaseConversation({ mockOnly }: Props) {
     setEnding(true);
     setTranscript(useMagazineFlowStore.getState().transcript.length ? useMagazineFlowStore.getState().transcript : utterances);
     await active.stop();
+    if (pipelineMode) setTranscript(useRealtimeInterviewStore.getState().utterances.map((row) => ({ ...row })));
     const recordingBlob = await recorder.stop();
     const current = useMagazineFlowStore.getState();
     if (current.archiveId) {
@@ -80,6 +92,7 @@ export function PhaseConversation({ mockOnly }: Props) {
     <div className="conversation-actions recording-exclude flex flex-col items-start gap-2">
       {mockOnly && !mockScriptComplete && <p className="text-sm text-[color:var(--color-ink-muted)]">{ui.demoWaitForClimax}</p>}
       {active.error && <p role="alert" className="text-[color:var(--color-rose)]">{active.error}</p>}
+      {pipelineMode && active.error && <button type="button" className="ui-btn-sub min-h-12" onClick={() => void pipeline.resume()}>{prepare.language === "en" ? "Resume AI (new requests may incur charges)" : "AIを再開（新しい処理の料金が発生します）"}</button>}
       <button type="button" disabled={!canFinish || ending} onClick={() => void end()} className="ui-btn">{ending ? ui.endingConversation : ui.endConversation}</button>
     </div>
   </div>;

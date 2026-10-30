@@ -36,6 +36,7 @@ function loadPrepareDefaults(): PrepareState {
       ...defaultPrepare,
       ...parsed,
       realtimeModel: isSelectableRealtimeModel(parsed.realtimeModel) ? parsed.realtimeModel : undefined,
+      interviewEngine: parsed.interviewEngine === "pipeline" ? "pipeline" : "realtime",
       includeCamera: false,
       consents: { ...defaultPrepare.consents, ...parsed.consents },
     };

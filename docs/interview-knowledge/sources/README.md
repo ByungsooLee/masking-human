@@ -1,5 +1,7 @@
 # 出典台帳
 
+D26（2026-10-30）：[低コスト方式の一次資料・実装説明](../low-cost-voice.md)。OpenRouter公式のSTT/TTS契約、text/transcription/speech別公開カタログを確認。実装は `src/lib/pipeline/`、APIは `src/app/api/pipeline/`、検証は `tests/pipeline*.test.ts`。実利用の品質・請求を実証する資料ではありません。
+
 [English](../en/sources/README.md)
 
 更新日：2026-10-23。R系は `e81bcb3` を照合基点としたリポジトリ資料・実装です。リンク先は将来更新されるため、更新時は判断記録も見直してください。

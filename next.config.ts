@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  outputFileTracingExcludes: {
+    "/*": ["./private-usage/**/*"],
+  },
   turbopack: {
     rules: {
       "*.css": {

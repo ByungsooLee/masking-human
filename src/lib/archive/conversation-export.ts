@@ -24,7 +24,7 @@ export function describeConversation(session: ArchivedSession, en = false) {
 export function buildConversationExport(session: ArchivedSession, en = false) {
   const summary = describeConversation(session, en);
   const transcript = session.transcript.filter((entry) => !entry.excluded && entry.text.trim())
-    .map((entry) => ({ id: entry.id, speaker: entry.speaker, text: entry.text, startedAtMs: entry.startedAt, endedAtMs: entry.endedAt }));
+    .map((entry) => ({ id: entry.id, speaker: entry.speaker, text: entry.text, startedAtMs: entry.startedAt, endedAtMs: entry.endedAt, ...(entry.interrupted ? { interrupted: true } : {}) }));
   const safeId = session.id.replace(/[^a-zA-Z0-9_-]/gu, "").slice(0, 36) || "session";
   const date = session.savedAt.match(/^\d{4}-\d{2}-\d{2}/u)?.[0] ?? "undated";
   const safeTitle = Array.from(summary.title).filter((character) => character.codePointAt(0)! >= 32)

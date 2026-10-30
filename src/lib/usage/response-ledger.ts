@@ -21,6 +21,8 @@ export type ResponseUsageLedger = {
   prompt: PromptMetadata | null;
   pricing: ReturnType<typeof resolveModelPricing> | null;
   entries: ResponseUsageEntry[];
+  pipeline?: import("@/lib/pipeline/types").PipelineCost;
+  transcriptionGaps?: { id: string; startedAt: number; endedAt: number; reason: "transcription_failed" | "not_transcribed" }[];
   dialogueGuidance?: { afterItemId: string; reason: "repeated_question" | "repeated_angle"; atMs: number }[];
 };
 
@@ -59,6 +61,8 @@ export function appendUsageEntry(ledger: ResponseUsageLedger, entry: ResponseUsa
 export function buildUsageExport(sessionId: string, ledger?: ResponseUsageLedger | null) {
   return {
     kind: "interview-usage", sessionId, ledger: ledger ?? null,
-    note: "Observed response usage only, not an invoice. Transcription costs are not included. Missing events and old sessions cannot be reconstructed. Timing is approximate; prompt metadata describes initial instructions, not the closing-time notice appended later. Characters are not token counts. No conversation text or credentials included.",
+    note: ledger?.pipeline
+      ? "App-only OpenRouter usage; reported charges, estimates, pending reservations and unresolved requests are distinguished. Includes transcription, replies, speech and failed attempts. Not an invoice; excludes top-up fees, tax, hosting and other applications. Month is UTC session-start month. No conversation text or credentials included."
+      : "Observed response usage only, not an invoice. Transcription costs are not included. Missing events and old sessions cannot be reconstructed. Timing is approximate; prompt metadata describes initial instructions, not the closing-time notice appended later. Characters are not token counts. No conversation text or credentials included.",
   };
 }

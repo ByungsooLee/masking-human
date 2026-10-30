@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/components/graph/thought-graph", () => ({ ThoughtGraph: () => null }));
 vi.mock("@/hooks/use-mic-level", () => ({ useMicLevel: vi.fn(() => ({ denied: false, hearing: false, level: 0 })) }));
 vi.mock("@/hooks/use-live-consent-session", () => ({ useLiveConsentSession: () => ({ grantConsents: vi.fn() }) }));
+vi.mock("@/contexts/recording-session-context", () => ({ useRecordingSession: () => ({ unlockAudio: vi.fn() }) }));
 
 import { PhasePrepare } from "@/components/magazine-flow/phase-prepare";
 import { useMicLevel } from "@/hooks/use-mic-level";
