@@ -79,3 +79,9 @@ Preserved the submitted material; reconciled current behavior; created a playboo
 D14: Japanese files at the knowledge root are the editorial source; `en/` maintains corresponding English translations with the same evidence categories and decision IDs. Original received material remains unchanged in the shared source archive. Maintain both languages in one PR and follow the [development workflow](development-workflow.md). Existing user authorization remains valid; routine implementation inside the documented baseline does not require renewed approval. No app behavior changes are introduced by translation.
 
 [日本語](../decisions-and-open-questions.md)
+
+## Security upgrade decision: 2026-10-23
+
+D15 follow-up (2026-10-26): A subsequent security upgrade CLI selected 16.4.3. With user authorization, update Next.js and `eslint-config-next` from 16.4.2 to 16.4.3 within existing PR #6, without creating a duplicate PR, and verify in a separate worktree. Interview, analysis, consent, executable prompts, and existing configuration remain unchanged; no codemods or additional feature adoption. Preserve the earlier 16.4.2 verification record as history and distinguish the new results in the changelog.
+
+D15: Following the user's `next upgrade --agent=security` request and the CLI-selected same-major target, update Next.js from 16.4.0 to 16.4.2 and align `eslint-config-next` to 16.4.2. Set `experimental.agentUpgrade` to `security`, preserving Cache Components, Partial Prefetching and CSS configuration. Conversation, analysis, consent and executable prompts remain unchanged. Only dependency versions and the explicit reminder policy change; no Future Defaults are adopted. Evidence is the CLI-generated upgrade instructions and the installed Next.js `agentUpgrade` guide. See the changelog for verification and remaining audit findings.

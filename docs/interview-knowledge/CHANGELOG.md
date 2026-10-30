@@ -2,6 +2,12 @@
 
 [English](en/CHANGELOG.md)
 
+## 2026-10-30：セキュリティPR #6を最新mainへ追従
+
+- 既存PR #6（Next.js・`eslint-config-next` 16.4.0→16.4.3、`experimental.agentUpgrade: "security"`）にD35までのmainを取り込み、変更履歴の衝突は双方の記録を残して解消。重複PRは作成せず。
+- 検証：依存インストール成功、`next --version` は16.4.3。74テストファイル・377件成功／13件スキップ（実API無効）。型検査・全体ESLint・本番ビルド成功（脆弱性警告による停止なし）。
+- `npm audit` はmoderate 2件（`vitest`、`@vitest/mocker`）、high/critical 0件。Next.js本体の指摘なし。実音声・有料APIは未実行。
+
 ## 2026-10-30：相づち中断の言い直し・応答取消・旧UI削除（D35）
 
 - Realtimeで、短い相づち・雑音だけでAIの質問が切れた場合は回答数を増やさず一度だけ言い直す。失敗扱いは自分の `response.create` が拒否された場合と通信路エラーに限定し、失敗時は応答取消と再生破棄を送る。遅れて届いた古い応答は `metadata` で見分けて取り消す（サーバーが `metadata` を返すかは実通信で未確認）。
@@ -106,6 +112,24 @@
 - 日英UI・現行仕様・判断記録を更新。会話・分析・同意条件は不変。
 - 検証結果：59ファイル・255テスト成功／13件スキップ。型チェック・変更したコードのESLint・`git diff --check`成功。新規の会話JSONテストは7件。
 - 単体テストで抜粋・順序・時刻・機密メタデータの非混入・ファイル名・空履歴・画面への配置を確認。実履歴・実録音・有料APIは使用せず、ブラウザ権限拒否を迂回した画面検証は行っていません。
+## 2026-10-26：既存セキュリティPRの更新
+
+- 新しいCLI選定先に合わせ、既存PR #6のNext.jsと`eslint-config-next`を16.4.2から16.4.3へ更新。D15に日英で追記し、以前の記録は保持。
+- `experimental.agentUpgrade: "security"`と既存設定を維持。会話・分析・同意・実行プロンプトの変更なし。mainと起動中の開発サーバーは変更せず別worktreeで実施。
+- 検証：依存インストール成功、`next --version` は16.4.3。58ファイル・248テスト成功／13件スキップ。デモproductionビルド・型チェック・設定ESLint成功。
+- productionデモ（別ポート）に対するPlaywright 3件成功：全API拒否、日英フロー、スマホ切替、履歴・ZIP/SRT/CSV/音声の保存、再読み込み、写真許可の表示専用確認。実マイク・外部API要求なし。
+- `npm audit` はmoderate 2件（`vitest`、`@vitest/mocker`）、high/critical 0件。Next.js本体の指摘なし。無関係な依存修正は行わず。
+- 実API音声、iPad・外付けマイク、実メール配送は未検証。モックの成功はこれらの検証を意味しない。
+
+## 2026-10-23：Next.jsセキュリティ更新
+
+- ユーザー依頼の更新CLIが選定したNext.js 16.4.2へ、16.4.0から更新。同一メジャーのためcodemodは実行せず、`eslint-config-next` も16.4.2に統一。
+- `experimental.agentUpgrade: "security"` を明示し、既存設定・会話・分析・同意・実行プロンプトは維持。判断D15を日英で追加。
+- ローカル・リモートのブランチ／履歴とGitHubの公開PRを確認し、同等の更新作業なし。別worktreeで実施。
+- 検証：依存インストール成功、`next --version` は16.4.2。58ファイル・248テスト成功／13件スキップ（実API無効）。`build:demo`、`tsc --noEmit`、設定ファイルのESLint成功。
+- 16.4.2のproductionデモに対し、ブラウザE2E 3件成功（日英のフロー・モバイル表示・履歴・素材保存・API拒否）。`/live?mock=1` は200、`/api/session` は403。
+- `npm audit` ではNext.js本体の指摘はなく、他の開発依存に7件（high 5、moderate 2）が残る。関連パッケージは `@next/eslint-plugin-next`、`eslint-config-next`、`fast-glob`、`micromatch`、`braces`、`vitest`、`@vitest/mocker`。無関係な強制ダウングレード・一括修正は行っていない。
+- 実音声・有料API・実メールは実行せず。全体CIは更新PRで記録する。
 
 ## 2026-10-23：英語版と開発ルール
 

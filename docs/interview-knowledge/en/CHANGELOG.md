@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-30: Bring security PR #6 up to date with main
+
+- Merge main through D35 into existing PR #6 (Next.js and `eslint-config-next` 16.4.0→16.4.3, `experimental.agentUpgrade: "security"`); changelog conflicts kept both records. No duplicate PR.
+- Validation: dependencies installed, `next --version` reports 16.4.3. 74 test files, 377 passed and 13 skipped (live APIs disabled). Type check, full ESLint and production build passed (no security-warning stop).
+- `npm audit`: 2 moderate (`vitest`, `@vitest/mocker`), 0 high/critical, none for Next.js. No live voice or paid API.
+
 ## 2026-10-30: Restating cut questions, response cancellation and legacy UI removal (D35)
 
 - In Realtime, when only a short acknowledgement or noise cuts off the AI's question, restate it once without counting an answer. Treat only a rejected own `response.create` or a transport error as failure; on failure, cancel the response and clear playback. Late stale responses are identified by `metadata` and cancelled (whether the server echoes `metadata` is unverified against the live API).
@@ -104,6 +110,24 @@
 - Updated bilingual UI, specification and decision record. Interview, analysis and consent terms remain unchanged.
 - Results: all 59 test files passed, 255 tests passed and 13 skipped. Type check, ESLint on changed code and `git diff --check` passed; seven new conversation JSON tests.
 - Unit tests cover excerpts, ordering, times, private metadata exclusion, filenames, empty entries and UI placement. No actual history, recordings or paid APIs used. No browser verification bypassing denied access permissions.
+## 2026-10-26: Update the existing security PR
+
+- Updated Next.js and `eslint-config-next` from 16.4.2 to the new CLI-selected 16.4.3 target within PR #6. Added bilingual D15 follow-up, preserving earlier records.
+- Retained `experimental.agentUpgrade: "security"` and existing configuration. No changes to interview, analysis, consent or executable prompts. Used a separate worktree without changing main or its running development server.
+- Validation: dependencies installed; `next --version` reports 16.4.3. All 58 test files passed, 248 tests passed and 13 skipped. Demo production build, type check and config ESLint passed.
+- Three Playwright checks passed against the production demo on a separate port: all APIs rejected, Japanese/English flow, mobile view switching, history, ZIP/SRT/CSV/audio downloads, reload persistence and preview-only photography permission. No real microphone or external API requests.
+- `npm audit`: two moderate findings (`vitest`, `@vitest/mocker`), zero high/critical findings, none for Next.js itself. No unrelated dependency remediation.
+- Live API audio, iPad/external microphones and actual email delivery remain unverified. Mock success does not establish those behaviors.
+
+## 2026-10-23: Next.js security upgrade
+
+- Updated Next.js 16.4.0 to the CLI-selected 16.4.2 security target. No codemod for this same-major update; aligned `eslint-config-next` to 16.4.2.
+- Explicitly set `experimental.agentUpgrade: "security"`, preserving existing configuration, conversation, analysis, consent and executable prompts. Added bilingual decision D15.
+- Checked local/remote branches/history and GitHub open PRs; no equivalent upgrade found. Used a separate worktree.
+- Validation: dependencies installed; `next --version` reports 16.4.2; 58 files passed, 248 tests passed and 13 skipped with live APIs disabled. `build:demo`, `tsc --noEmit` and ESLint on the config passed.
+- Three browser E2E tests passed against the 16.4.2 production demo, covering Japanese/English flow, mobile views, history, downloads and API rejection. `/live?mock=1` returned 200 and `/api/session` returned 403.
+- `npm audit` reports no finding for the Next.js package itself; seven findings remain in other development dependencies (five high, two moderate): `@next/eslint-plugin-next`, `eslint-config-next`, `fast-glob`, `micromatch`, `braces`, `vitest`, `@vitest/mocker`. No unrelated forced downgrade or blanket fix was applied.
+- No live voice, paid API or real email execution. Full CI results are recorded on the upgrade PR.
 
 ## 2026-10-23: bilingual documentation and development rules
 
