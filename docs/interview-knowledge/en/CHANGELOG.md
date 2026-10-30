@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-30: One short story with an ending (D33)
+
+- Push review baseline `afbc534`; subsequent changes add eight-answer progression, closing audio drain, opening protection and concrete-story prompts. Update bilingual specification, evaluation and decisions. No paid API/live voice evaluation.
+- 73 files, 361 tests passed and 13 skipped; type, scoped ESLint and whitespace checks passed. Existing Next.js security warning requires a separate upgrade. Mock success does not establish live voice quality.
+
 ## 2026-10-30: Fresh startup sessions (D32)
 
 - Save new sessions and selected initial consents together, removing stale-ID/browser-storage dependence. Distinguish authentication, storage and audio activation errors. No paid API calls; saved browser permissions prevented verification on the actual screen.

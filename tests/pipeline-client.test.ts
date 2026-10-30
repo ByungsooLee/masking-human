@@ -22,11 +22,11 @@ const actions: string[] = [];
 let transcriptionResolve: ((response: Response) => void) | null;
 const json = (data: unknown) => new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } });
 
-function client(addModule: () => Promise<void> = async () => undefined) {
+function client(addModule: () => Promise<void> = async () => undefined, onTimeLimit: () => void = () => undefined) {
   return new PipelineInterviewClient({
     settings: { agentId: "default", interviewLanguage: "en" }, stream: {} as MediaStream,
     context: { audioWorklet: { addModule }, resume: async () => undefined, createMediaStreamSource: () => ({ connect: () => undefined, disconnect: () => undefined }), destination: {} } as unknown as AudioContext,
-    attachAiAudio: () => undefined, elapsed: () => elapsed, onTimeLimit: () => undefined,
+    attachAiAudio: () => undefined, elapsed: () => elapsed, onTimeLimit,
   });
 }
 
@@ -53,7 +53,7 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllGlobals(); useRealtimeInterviewStore.getState().reset(); });
 
 describe("pipeline recording lifecycle", () => {
-  it("marks speech interrupted even between sentences while the player is not speaking", async () => {
+  it("does not interrupt the opening or transcribe noise between its sentences", async () => {
     const base = fetcher.getMockImplementation()!;
     let speechCount = 0;
     let nextSentenceRequested = false;
@@ -73,11 +73,34 @@ describe("pipeline recording lifecycle", () => {
     await vi.waitFor(() => expect(nextSentenceRequested).toBe(true));
     await vi.waitFor(() => expect(useRealtimeInterviewStore.getState().utterances.at(-1)?.text).toBe("Welcome!"));
     for (let index = 0; index < 10; index += 1) { elapsed += 64; capture.port.onmessage?.({ data: new Float32Array(1024).fill(0.05) }); }
-    expect(useRealtimeInterviewStore.getState().utterances.at(-1)?.interrupted).toBe(true);
+    expect(useRealtimeInterviewStore.getState().utterances.at(-1)?.interrupted).not.toBe(true);
     const stopping = interview.stop();
-    await vi.waitFor(() => expect(transcriptionResolve).not.toBeNull());
-    transcriptionResolve!(json({ text: "", cost: cost() }));
     await stopping; await starting;
+    expect(transcriptionResolve).toBeNull();
+  });
+  it("finishes after eight actual answers and waits for closing speech to finish", async () => {
+    const base = fetcher.getMockImplementation()!;
+    let replies = 0;
+    fetcher.mockImplementation(async (url: string, options?: { body?: string }) => {
+      if (options?.body && JSON.parse(options.body).action === "reply") { replies += 1; return json({ text: replies < 8 ? `Question ${replies}?` : "Thank you.", cost: cost() }); }
+      return base(url, options);
+    });
+    const finish = vi.fn();
+    const interview = client(undefined, finish);
+    await interview.start();
+    const frame = (amplitude: number) => { elapsed += 64; capture.port.onmessage?.({ data: new Float32Array(1024).fill(amplitude) }); };
+    for (let answerIndex = 1; answerIndex <= 8; answerIndex += 1) {
+      transcriptionResolve = null;
+      for (let index = 0; index < 10; index += 1) frame(0.05);
+      for (let index = 0; index < 18; index += 1) frame(0);
+      await vi.waitFor(() => expect(transcriptionResolve).not.toBeNull());
+      transcriptionResolve!(json({ text: `Answer ${answerIndex}`, cost: cost() }));
+      await vi.waitFor(() => expect(useRealtimeInterviewStore.getState().utterances.at(-1)?.text).toBe(answerIndex < 8 ? `Question ${answerIndex}?` : "Thank you."));
+      if (answerIndex < 8) expect(finish).not.toHaveBeenCalled();
+    }
+    expect(finish).toHaveBeenCalledOnce();
+    expect(replies).toBe(8);
+    await interview.stop();
   });
   it("recovers an interrupted pending reply after noise transcribes to empty, without inventing a guest utterance", async () => {
     let replyCount = 0;

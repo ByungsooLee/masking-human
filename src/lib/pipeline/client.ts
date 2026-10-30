@@ -5,6 +5,7 @@ import type { Utterance } from "@/lib/realtime/types";
 import type { PipelineCost, PipelineSettings } from "./types";
 import { encodeInterviewWav, InterviewPcmPlayer, InterviewVoiceDetector } from "./audio";
 import { pipelineError } from "./copy";
+import { countGuestAnswers, INTERVIEW_ANSWER_LIMIT } from "@/lib/realtime/interview-progress";
 
 const store = () => useRealtimeInterviewStore.getState();
 
@@ -50,6 +51,8 @@ export class PipelineInterviewClient {
   private deferredAudio: NonNullable<PipelineInterviewClient["failedAudio"]>[] = [];
   private guard = createDialogueGuard();
   private stopPromise: Promise<void> | null = null;
+  private opening = true;
+  private closing = false;
 
   constructor(private options: {
     settings: PipelineSettings;
@@ -132,7 +135,7 @@ export class PipelineInterviewClient {
       this.source = this.options.context.createMediaStreamSource(this.options.stream);
       this.capture = new AudioWorkletNode(this.options.context, "interview-capture");
       this.capture.port.onmessage = (event: MessageEvent<Float32Array>) => {
-        if (!this.ended && !this.paused) this.detector?.push(event.data, this.activeSpeech !== null);
+        if (!this.ended && !this.paused && !this.opening && !this.closing) this.detector?.push(event.data, this.activeSpeech !== null);
       };
       this.source.connect(this.capture); this.capture.connect(this.options.context.destination);
       store().setConnectionStatus("connected"); store().setListeningPhase("waiting_ai");
@@ -140,6 +143,7 @@ export class PipelineInterviewClient {
       this.limit = setTimeout(this.options.onTimeLimit, 10 * 60 * 1000);
       this.poll = setInterval(() => { void this.refreshCost().catch(() => undefined); }, 3000);
       await this.speak(data.opening);
+      this.opening = false;
     } catch (error) { this.fail(error); }
   }
 
@@ -186,6 +190,7 @@ export class PipelineInterviewClient {
     const controller = this.replyAbort;
     try {
       const rows = store().utterances;
+      this.closing = countGuestAnswers(rows) >= INTERVIEW_ANSWER_LIMIT;
       const completed = new Set(rows.filter((row) => row.speaker === "ai" && !row.interrupted).map((row) => row.id));
       const notice = this.guard.observe(rows.slice(0, -1), completed);
       const messages = rows.filter((row) => row.speaker !== "host").map((row) => ({ role: row.speaker === "guest" ? "user" : "assistant", content: `${row.text}${row.interrupted ? "\n[Audio was interrupted; the guest may not have heard the full sentence.]" : ""}` }));
@@ -196,7 +201,9 @@ export class PipelineInterviewClient {
       const data = await pipelineJson({ action: "reply", ...this.session, requestId: crypto.randomUUID(), messages, guidance: notice?.reason }, controller.signal);
       if (generation !== this.generation || this.ended) return;
       this.replyAbort = null;
+      if (data.complete) this.closing = true;
       await this.speak(data.text);
+      if (this.closing && !this.ended && generation === this.generation) this.options.onTimeLimit();
     } catch (error) { if (generation === this.generation && !this.ended) throw error; }
     finally { if (this.replyAbort === controller) this.replyAbort = null; }
   }
@@ -260,7 +267,11 @@ export class PipelineInterviewClient {
           catch (error) { this.failedAudio = deferred; throw error; }
         }
       }
-      else if (this.retrySpeech) { const text = this.retrySpeech; this.retrySpeech = null; await this.speak(text); }
+      else if (this.retrySpeech) {
+        const text = this.retrySpeech; this.retrySpeech = null; await this.speak(text);
+        this.opening = false;
+        if (this.closing && !this.ended) this.options.onTimeLimit();
+      }
       else if (store().utterances.at(-1)?.speaker === "guest") await this.reply();
       else { store().setInputState("idle"); store().setListeningPhase("guest_may_speak"); }
     } catch (error) { this.failedAudio ??= audio; this.fail(error); }

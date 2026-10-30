@@ -23,6 +23,7 @@ import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 import type { InterviewerAgentId, InterviewLanguage, InterviewerProfile } from "@/lib/magazine-flow/types";
 import { useSessionTimeLimit } from "./use-session-time-limit";
 import { inputStateFromTransportEvent } from "@/lib/graph/map-update-status";
+import { createOpeningGate, INTERVIEW_ANSWER_LIMIT, interviewTurnGuidance } from "@/lib/realtime/interview-progress";
 
 export type RealtimeStartOptions = {
   agentId?: InterviewerAgentId;
@@ -166,6 +167,41 @@ export function useRealtimeInterview() {
         config: buildRealtimeSessionConfig(startOptions?.interviewLanguage ?? "ja"),
       });
 
+      const answeredItems = new Set<string>();
+      const ignoredOpeningItems = new Set<string>();
+      let responsePending = true;
+      let pendingAnswer = false;
+      let closing = false;
+      let closingCompleted = false;
+      let closingAudioStopped = false;
+      let closingAudioStarted = false;
+      let finished = false;
+      let closingForTime = false;
+      const openingGate = createOpeningGate(() => {
+        if (sessionRef.current !== session) return;
+        session.mute(false);
+        setListeningPhase("guest_may_speak");
+      });
+      const finishClosing = () => {
+        if (!finished && closingCompleted && closingAudioStopped && sessionRef.current === session) {
+          finished = true;
+          queueMicrotask(() => {
+            if (sessionRef.current !== session) return;
+            if (onTimeLimitRef.current) onTimeLimitRef.current();
+            else stopRef.current?.();
+          });
+        }
+      };
+      const respondToAnswer = () => {
+        if (!pendingAnswer || responsePending || finished || closing || sessionRef.current !== session) return;
+        pendingAnswer = false;
+        responsePending = true;
+        closing = answeredItems.size >= INTERVIEW_ANSWER_LIMIT || closingForTime;
+        if (closing) session.mute(true);
+        setListeningPhase("waiting_ai");
+        session.transport.sendEvent({ type: "response.create", response: { instructions: `${data.instructions ?? ""}\n${interviewTurnGuidance(closing ? INTERVIEW_ANSWER_LIMIT : answeredItems.size)}` } });
+      };
+
       const dialogueGuard = createDialogueGuard();
       const completedAiItems = new Set<string>();
       const guideNextTurn = () => {
@@ -182,24 +218,61 @@ export function useRealtimeInterview() {
       };
       session.on("history_updated", (history) => {
         setUtterances(
-          historyToUtterances(history, timingRef.current, Date.now(), elapsedRef.current),
+          historyToUtterances(history, timingRef.current, Date.now(), elapsedRef.current).filter((row) => !ignoredOpeningItems.has(row.id)),
         );
         guideNextTurn();
       });
 
       session.on("audio_start", () => {
+        if (sessionRef.current !== session) return;
+        if (closing) closingAudioStarted = true;
         setListeningPhase("ai_speaking");
         markAiAudioStart(timingRef.current, elapsedRef.current());
       });
 
       session.on("audio_stopped", () => {
-        setListeningPhase("guest_may_speak");
+        if (sessionRef.current !== session) return;
+        if (!openingGate.ready) openingGate.audioStopped();
+        if (closing && closingAudioStarted) { closingAudioStopped = true; finishClosing(); }
+        else if (openingGate.ready) setListeningPhase("guest_may_speak");
         markAiAudioStop(timingRef.current, elapsedRef.current());
         setUtterances(useRealtimeInterviewStore.getState().utterances.map((row) => ({ ...row, ...timingRef.current.get(row.id) })));
       });
 
       session.on("transport_event", (event) => {
         if (useRealtimeInterviewStore.getState().usageSessionId !== data.sessionId) return;
+        const incoming = event as { type: string; item_id?: string; transcript?: string; response?: { status?: string } };
+        if (incoming.type === "input_audio_buffer.speech_started" && !openingGate.ready && incoming.item_id) ignoredOpeningItems.add(incoming.item_id);
+        if (incoming.type === "conversation.item.input_audio_transcription.completed" && incoming.item_id && (!openingGate.ready || ignoredOpeningItems.has(incoming.item_id))) {
+          ignoredOpeningItems.add(incoming.item_id);
+          session.transport.sendEvent({ type: "conversation.item.delete", item_id: incoming.item_id });
+        }
+        if (incoming.type === "conversation.item.input_audio_transcription.completed" && openingGate.ready && !closing && incoming.item_id && incoming.transcript?.trim() && !ignoredOpeningItems.has(incoming.item_id) && !answeredItems.has(incoming.item_id)) {
+          setError(null);
+          answeredItems.add(incoming.item_id);
+          pendingAnswer = true;
+          respondToAnswer();
+        }
+        if (incoming.type === "response.done") {
+          responsePending = false;
+          if (!openingGate.ready && incoming.response?.status === "completed") openingGate.responseCompleted();
+          if (!openingGate.ready && incoming.response?.status !== "completed") {
+            setError(copyRef.current.connectionFailed);
+            setListeningPhase("hidden");
+          }
+          if (openingGate.ready && !closing && !pendingAnswer && incoming.response?.status !== "completed") setListeningPhase("guest_may_speak");
+          if (closing && incoming.response?.status === "completed") { closingCompleted = true; finishClosing(); }
+          if (closing && incoming.response?.status !== "completed") {
+            setError(copyRef.current.connectionFailed);
+            setListeningPhase("hidden");
+          }
+          respondToAnswer();
+        }
+        if (incoming.type === "conversation.item.input_audio_transcription.failed") {
+          setError(startOptions?.interviewLanguage === "en" ? "Could not transcribe that audio. Try speaking again, or finish to save the recording." : "音声を文字起こしできませんでした。もう一度話すか、終了して録音を保存してください。");
+          useRealtimeInterviewStore.getState().setInputState("failed");
+          setListeningPhase(openingGate.ready && !closing ? "guest_may_speak" : "hidden");
+        }
         const usageEntry = usageEntryFromEvent(event, model, elapsedRef.current());
         if (usageEntry) useRealtimeInterviewStore.getState().recordUsage(usageEntry);
         if (usageEntry?.kind === "response" && usageEntry.status === "completed") {
@@ -221,12 +294,14 @@ export function useRealtimeInterview() {
 
       sessionRef.current = session;
       await session.connect({ apiKey: data.clientSecret });
+      session.mute(true);
       setConnectionStatus("connected");
       setListeningPhase("waiting_ai");
       arm();
       session.transport.sendEvent({ type: "response.create" });
       closingTimerRef.current = setTimeout(() => {
         if (sessionRef.current !== session) return;
+        closingForTime = true;
         session.transport.sendEvent({
           type: "session.update",
           session: { type: "realtime", instructions: `${data.instructions ?? ""}\n運営からの時間連絡：残り約1分です。次の応答から未来の一言と振り返りへ向かい、10分以内に感謝で締めてください。` },

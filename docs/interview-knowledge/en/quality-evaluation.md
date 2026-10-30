@@ -1,5 +1,7 @@
 # Conversation quality and validation
 
+D33: Human-review bilingual synthetic `eval/interviewer-bounded-cases.json` for practical reasons without personality claims, accepting unclear answers, following events and ending without another question. Progress, SDK-mock and low-cost tests cover opening protection, empty/duplicate input and closing audio drain after eight answers. Not proof of real engagement, acoustics or latency.
+
 D26 (2026-10-30): `tests/pipeline*.test.ts` uses synthetic/stubbed budget concurrency, persistence, Supabase revision conflicts, authentication, backup routing, uncertainty, VAD, sentence speech, final transcription on shutdown, stopping during initialization and bilingual costs. Actual voice models/database/invoices/browser remain unverified. Before promotion, compare ten-minute interviews in both languages for question quality, speech-end-to-first-audio delay, playback leakage, interruption, recording alignment and actual cost. See [setup and validation](low-cost-voice.md).
 
 Updated: 2026-10-23. The observation criteria and acceptance conditions below are a **proposed evaluation framework**. They are neither a validated measurement scale nor an implemented automatic judge. [S1, R9]

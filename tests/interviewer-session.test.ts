@@ -51,7 +51,8 @@ describe("interviewer session instructions", () => {
   });
   it("combines the full interview arc with the selected listening style", () => {
     const session = buildRealtimeClientSecretSession({ agentId: "reflective", interviewLanguage: "en" });
-    expect(session.instructions).toContain("9〜10分");
+    expect(session.instructions).toContain("6〜8問");
+    expect(session.instructions).toContain("10分を上限");
     expect(session.instructions).toContain("最初の一声");
     expect(session.instructions).toContain("落ち着いた間");
     expect(session.instructions).toContain("Conduct the interview in English");

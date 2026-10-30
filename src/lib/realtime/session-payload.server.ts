@@ -33,6 +33,7 @@ export function buildRealtimeClientSecretSession(options?: {
     instructions: `${loadInterviewerPrompt(options?.agentId ?? "default")}\n\n${persona}\n${langNote}\n${opening}`,
     audio: {
       input: {
+        turn_detection: { type: "semantic_vad" as const, create_response: false, interrupt_response: true },
         transcription: {
           model: "gpt-live-transcribe" as const,
           delay: "low" as const,

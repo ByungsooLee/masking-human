@@ -10,6 +10,7 @@ import { useRecordingSession } from "@/contexts/recording-session-context";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 import { saveArchivedSession } from "@/lib/archive/session-archive";
+import { countGuestAnswers, INTERVIEW_ANSWER_LIMIT } from "@/lib/realtime/interview-progress";
 
 type Props = { mockOnly: boolean };
 
@@ -86,7 +87,7 @@ export function PhaseConversation({ mockOnly }: Props) {
   return <div className="relative mx-auto flex min-h-[calc(100dvh-3.5rem)] w-full max-w-[88rem] flex-col px-[var(--space-page-x)] py-4">
     <div className="recording-exclude flex items-center justify-between gap-4 pb-4 text-sm">
       <p>{recorder.recording ? ui.recordingOn : ui.recordingOff} <span className="ui-num ml-3">{formatElapsed(tick)}</span></p>
-      <p>{mockOnly ? (prepare.language === "ja" ? "無料デモ" : "Free demo") : (prepare.language === "ja" ? "音声インタビュー" : "Voice interview")}</p>
+      <p>{mockOnly ? (prepare.language === "ja" ? "無料デモ" : "Free demo") : `${prepare.language === "ja" ? "回答" : "Answers"} ${Math.min(countGuestAnswers(utterances), INTERVIEW_ANSWER_LIMIT)} / ${INTERVIEW_ANSWER_LIMIT}`}</p>
     </div>
     <ConversationWorkspace utterances={utterances} language={prepare.language} guestName={prepare.guestName} inputState={inputState} pendingSince={pendingSince} phase={listeningPhase} error={active.error} onCapture={recorder.captureEditingEvent} />
     <div className="conversation-actions recording-exclude flex flex-col items-start gap-2">

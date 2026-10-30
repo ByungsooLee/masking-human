@@ -1,5 +1,7 @@
 # Interview development knowledge
 
+D33 (2026-10-30): [One short story with a visible ending](production-conversations.md). After pushing the baseline, separately add eight-answer progression, opening protection and event-focused prompts. Live audio unverified.
+
 D31 (2026-10-30): [Review hardening](low-cost-voice.md), including the extra session secret, migration 007, device checks and unresolved-charge limitations before public deployment.
 
 D26 (2026-10-30): [Low-cost voice and always-visible costs](low-cost-voice.md). Add an optional OpenRouter STT/fixed-LLM/TTS engine with reservations, shared accounting and operator access; distinguish implementation from live voice and invoice validation.

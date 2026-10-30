@@ -6,6 +6,18 @@ Updated: 2026-10-27. D20 implementation and workflow. Evaluate participant comfo
 
 ## Instructions for new conversations
 
+### D33: One short story with a visible ending (2026-10-30; supersedes older time allocations)
+
+Push the review baseline as `afbc534`, then improve conversations separately. Aim for six to eight questions and close after eight nonempty guest answers. Nonempty clarification/skip answers also count; this is not semantic classification of main questions. Ten minutes is a safety ceiling, not a target duration. Preserve early Finish.
+
+- Introduce the project, approximately eight questions and the map. Products occupy one or two entry questions, then follow an event, choice or interest actually shared. Continue one story through actions and outcomes rather than emotion checklists or rephrasing an unclear question. Do not require quotes, drama or family.
+- After six answers announce two questions remain; after seven ask the final question; after eight briefly reflect and thank without another question. Enter existing review after closing audio drains. The next answer after nine minutes also closes; retain the ten-minute hard stop. Display the answer count.
+- Disable automatic Realtime VAD responses; request one response per nonempty completed transcription, deduplicating IDs. Combine progression with initial instructions. Initial prompt hashes do not cover dynamic progression; transcription-wait latency requires device testing.
+- Mute the AI microphone until both opening generation and playback finish. Remove already-arrived opening-boundary input items from AI conversation history rather than counting them as guest answers; do not delete the separate recording. Low-cost detection also ignores opening/closing input. Failures show errors or preserve Finish rather than silently appearing completed.
+- New live prompt revision: `2026-10-30.story.1`. Old transcripts, signatures and analysis remain unchanged. Demos only inherit shared opening wording; no eight-answer controller on their fixed script.
+
+Evidence: current feedback and existing non-leading/storytelling guidance. Confirm manual response settings in the official [Realtime events reference](https://developers.openai.com/api/reference/resources/realtime/client-events) and installed SDK. Progress, SDK-mock and low-cost tests cover empty/duplicate input, opening protection and closing audio drain. Bilingual `eval/interviewer-bounded-cases.json` contains synthetic author-written examples, not participant transcripts or generated model evaluation. Live audio, engagement, feedback, synchronization and latency remain unverified. No paid API calls.
+
 - Preserve one focus/question, the approximate ten-minute limit and four phases. Acknowledgment may be integrated into the question; avoid full repetition every turn.
 - Follow the participant's words into a concrete scene, their action and their own reasons. Do not demand emotional meaning from a practical answer.
 - Do not equate vague acknowledgment with agreement. After two short answers, change focus. Briefly acknowledge dissatisfaction and change the next question. Refusal, stopping and corrections take priority.

@@ -8,6 +8,8 @@ Help participants describe concrete experiences and things that matter to them, 
 
 ## Participant experience: current implementation
 
+D33: Adopt [one short story with a visible ending](production-conversations.md). Aim for six to eight questions; close after eight nonempty guest answers, then review after playback. Protect opening AI input and add progression to both engines. Preserve the ten-minute ceiling, single questions, non-leading behavior and consent. Live voice improvement remains unverified.
+
 D32: Create a fresh session and save selected initial consents together on each start. Do not reuse old sessionStorage credentials. Distinguish authentication, storage and audio activation failures. Publication/signature consent conditions remain unchanged.
 
 D31: Harden low-cost authentication, empty-transcription recovery and untranscribed interval warnings. See [review hardening](low-cost-voice.md#review-hardening-d31-supersedes-older-details-below) for production configuration, migration 007 and remaining limitations. Prompts and consent conditions are unchanged.

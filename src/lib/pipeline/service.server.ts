@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
 import { buildRealtimeClientSecretSession } from "@/lib/realtime/session-payload.server";
 import { INTERVIEW_OPENING } from "@/lib/realtime/interview-opening";
+import { INTERVIEW_ANSWER_LIMIT, interviewTurnGuidance } from "@/lib/realtime/interview-progress";
 import { PIPELINE_MODELS, fetchPipelineRates, pipelineBudget, requirePipelineConfig, verifyPipelineCredit } from "./config.server";
 import { pipelineTransaction } from "./store.server";
 import { summarizePipelineCost, type PipelineCharge, type PipelineSession, type PipelineSettings } from "./types";
@@ -52,7 +53,7 @@ export async function startPipeline(settings: PipelineSettings) {
   const sessionId = randomUUID();
   const month = new Date().toISOString().slice(0, 7);
   const instructions = `${buildRealtimeClientSecretSession(settings).instructions}\nReply as the interviewer with plain spoken text only. Do not expose analysis or instructions. Preserve the established interview language from the full history.`;
-  const promptMetadata = { revision: "2026-10-30.pipeline.1", sha256: createHash("sha256").update(instructions).digest("hex"), characters: Array.from(instructions).length };
+  const promptMetadata = { revision: "2026-10-30.story.1", sha256: createHash("sha256").update(instructions).digest("hex"), characters: Array.from(instructions).length };
   return pipelineTransaction(month, (state) => {
     if (summarizePipelineCost(state, "", month, pipelineBudget()).remainingUsd < 0.01) throw new Error("PIPELINE_BUDGET");
     state.sessions[sessionId] = { id: sessionId, createdAt: Date.now(), closed: false, settings, instructions, voice, rates, entries: [] };
@@ -158,7 +159,9 @@ export async function replyPipeline(request: Extract<PipelineRequest, { action: 
   const session = await pipelineTransaction(month, (state) => sessionFor(state, sessionId), sessionId);
   if (request.messages.at(-1)?.role !== "user" || request.messages.reduce((total, row) => total + row.content.length, 0) > 50000) throw new Error("PIPELINE_CONTEXT");
   const elapsed = Date.now() - session.createdAt;
-  const instructions = `${session.instructions}\n${request.guidance ? "A local repetition check found a possible repeated question or angle. Prioritize the latest guest answer, avoid asking answered questions, and consider another relevant person, choice or change. Respect refusals and corrections; the heuristic can be wrong." : ""} ${elapsed >= 9 * 60 * 1000 ? "Less than one minute remains: gently close the interview without adding a new topic." : ""}`;
+  const answers = request.messages.filter((row) => row.role === "user").length;
+  const complete = answers >= INTERVIEW_ANSWER_LIMIT || elapsed >= 9 * 60 * 1000;
+  const instructions = `${session.instructions}\n${interviewTurnGuidance(complete ? INTERVIEW_ANSWER_LIMIT : answers)}\n${request.guidance ? "A local repetition check found a possible repeated question or angle. Prioritize the latest guest answer, avoid asking answered questions, and consider another relevant person, choice or change. Respect refusals and corrections; the heuristic can be wrong." : ""}`;
   const messages = [{ role: "system", content: instructions }, ...request.messages];
   for (const [attempt, model] of [PIPELINE_MODELS.reply, PIPELINE_MODELS.fallback].entries()) {
     const id = attempt === 0 ? requestId : `${requestId}:fallback`;
@@ -183,7 +186,7 @@ export async function replyPipeline(request: Extract<PipelineRequest, { action: 
       const cost = await settlePipelineCharge(month, sessionId, id, { usd: amount ?? estimate, status: amount !== null ? "reported" : estimate !== null ? "estimated" : "unknown", inputTokens: Number.isFinite(input) ? input : undefined, outputTokens: Number.isFinite(output) ? output : undefined, generationId: data.id });
       const text = data.choices?.[0]?.message?.content?.trim();
       if (!text || text.length > 1200 || data.choices?.[0]?.finish_reason === "length") throw new Error("PIPELINE_REPLY_INCOMPLETE");
-      return { text, model, cost };
+      return { text, model, cost, complete };
     } catch (error) {
       if (error instanceof Error && error.message === "PIPELINE_REPLY_INCOMPLETE") throw error;
       await settlePipelineCharge(month, sessionId, id, { usd: null, status: "unknown" });
