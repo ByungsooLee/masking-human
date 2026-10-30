@@ -4,6 +4,14 @@
 
 Updated 2026-10-30. Implementation and setup. Live voice quality and monthly spending have not been measured.
 
+## D34: Normal-key preflight (supersedes old balance-check descriptions)
+
+Before recording/on connection, use the inference key with `GET /api/v1/key` to validate its limit, remainder and applicable budget. Never call management-only `/credits` or require an additional management key. Accept explicitly unlimited keys, reject exhausted finite limits with a distinct error, and fail on malformed data/lookup errors. Preparation and preflight data explicitly say account balance was not checked; never infer $0. Preserve upstream 402 handling, app budget reservations and unresolved holds.
+
+Count response-request rounds rather than audio segments; group already-queued transcriptions. Explicit retries of the same answer do not increment the count. This does not eliminate interruption costs or Whisper noise hallucinations. Global-login-limit lockout, upstream reconciliation, PCM format and real-device noise/synchronization remain open.
+
+Evidence: [key limits](https://openrouter.ai/docs/api_reference/limits), [management-only credits](https://openrouter.ai/docs/api/api-reference/credits/get-remaining-credits). Verify with mocks including denied `/credits`, not live credential calls or paid generation.
+
 ## Review hardening (D31; supersedes older details below)
 
 - Keep eight-character passwords with scrypt comparison; sign cookies using a separate secret. Development creates an ignored, mode-600 `private-usage/session-secret`. Production requires `INTERVIEW_SESSION_SECRET` with at least 32 cryptographically random characters (for example `openssl rand -hex 32`). Password/secret rotation invalidates old cookies. Device sign-out deletes its cookie; revoking stolen copies requires secret rotation.

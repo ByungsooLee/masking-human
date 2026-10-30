@@ -19,6 +19,8 @@ D21 lives in the shared prompt, five synthetic cases in `eval/interviewer-story-
 
 ## Primary sources researched on 2026-10-27
 
+- D34 (2026-10-30): [OpenRouter API Key](https://openrouter.ai/docs/api/reference/limits) documents normal-key spend limit/remaining and is distinct from account `/credits`. [OpenAI Realtime server events](https://developers.openai.com/api/reference/resources/realtime/server-events) documents WebRTC `output_audio_buffer.started/stopped`, correlated by `response_id`. Add local synthetic event tests using the installed SDK without network/API charges. Playback accuracy on real devices remains unverified.
+
 - W1: [OpenAI Realtime Prompting Guide](https://developers.openai.com/cookbook/examples/realtime_prompting_guide). Informs clear instructions, repetition avoidance and state transitions; not a model migration or proof of this app's quality.
 - W2: [University of Leicester interviewing guide](https://le.ac.uk/emoha/what-is-oral-history/how-to-do-oral-history/interviewing/questions). Open questions, specificity, follow-ups, non-leading practice and participant pace; not evidence of viral reach.
 - W3: [YouTube audience retention](https://support.google.com/youtube/answer/9314415) and [Shorts discovery](https://support.google.com/youtube/answer/11914225?co=YOUTUBE._YTVideoType%3Dshorts&hl=en-GB). Matching openings/content and watching behavior inform post-recording experiments, not optimal-duration or view-count guarantees.

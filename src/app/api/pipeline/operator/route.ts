@@ -19,7 +19,10 @@ export async function POST(request: Request) {
     const response = NextResponse.json({ ok: true }, { headers });
     response.cookies.set(OPERATOR_COOKIE, operatorCookieValue(), { httpOnly: true, sameSite: "strict", secure: publicOrigin(request).startsWith("https:"), maxAge: 8 * 60 * 60, path: "/api" });
     return response;
-  } catch { return NextResponse.json({ error: "PIPELINE_CONFIGURATION" }, { status: 503, headers }); }
+  } catch (error) {
+    const code = error instanceof Error && /^PIPELINE_[A-Z_]+$/u.test(error.message) ? error.message : "PIPELINE_CONFIGURATION";
+    return NextResponse.json({ error: code }, { status: 503, headers });
+  }
 }
 
 export async function DELETE(request: Request) {

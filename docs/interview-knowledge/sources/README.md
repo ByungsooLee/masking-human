@@ -18,6 +18,8 @@ D26（2026-10-30）：[低コスト方式の一次資料・実装説明](../low-
 
 ## 調査した一次資料（2026-10-27）
 
+- D34（2026-10-30）：[OpenRouter API Key](https://openrouter.ai/docs/api/reference/limits)では通常APIキーの支出上限・残額を確認し、アカウント残高の`/credits`照会とは区別。[OpenAI Realtime server events](https://developers.openai.com/api/reference/resources/realtime/server-events)ではWebRTCの`output_audio_buffer.started/stopped`を同一`response_id`と照合。実SDKを使うローカル合成イベントテストを追加し、ネットワーク/API課金は行わない。実機の再生完了精度は未検証。
+
 - W1：[OpenAI Realtime Prompting Guide](https://developers.openai.com/cookbook/examples/realtime_prompting_guide)。短い明確な指示・反復回避・会話状態の遷移を参考にした。モデル変更や本アプリの品質実証を意味しない。
 - W2：[レスター大学のインタビュー指針](https://le.ac.uk/emoha/what-is-oral-history/how-to-do-oral-history/interviewing/questions)。開かれた問い・具体化・追質問・誘導回避・相手のペース。SNS拡散の実証ではない。
 - W3：[YouTube視聴者維持率](https://support.google.com/youtube/answer/9314415)、[Shortsの検索と発見](https://support.google.com/youtube/answer/11914225?co=YOUTUBE._YTVideoType%3Dshorts&hl=en-GB)。冒頭と内容の一致、視聴選択・視聴時間等を収録後の編集検証で参照。最適尺や再生数を保証しない。

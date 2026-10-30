@@ -23,7 +23,8 @@ import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 import type { InterviewerAgentId, InterviewLanguage, InterviewerProfile } from "@/lib/magazine-flow/types";
 import { useSessionTimeLimit } from "./use-session-time-limit";
 import { inputStateFromTransportEvent } from "@/lib/graph/map-update-status";
-import { createOpeningGate, INTERVIEW_ANSWER_LIMIT, interviewTurnGuidance } from "@/lib/realtime/interview-progress";
+import { INTERVIEW_ANSWER_LIMIT, interviewTurnGuidance } from "@/lib/realtime/interview-progress";
+import { WebRtcInterviewControl } from "@/lib/realtime/web-rtc-interview-control";
 
 export type RealtimeStartOptions = {
   agentId?: InterviewerAgentId;
@@ -45,6 +46,9 @@ export function useRealtimeInterview() {
   const usagePatchTokenRef = useRef<string | null>(null);
   const onTimeLimitRef = useRef<(() => void) | undefined>(undefined);
   const closingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const controlRef = useRef<WebRtcInterviewControl | null>(null);
+  const inputStreamRef = useRef<MediaStream | null>(null);
+  const lifecycleRef = useRef(0);
 
   const connectionStatus = useRealtimeInterviewStore((s) => s.connectionStatus);
   const listeningPhase = useRealtimeInterviewStore((s) => s.listeningPhase);
@@ -64,8 +68,11 @@ export function useRealtimeInterview() {
   });
 
   const stop = useCallback(async () => {
+    lifecycleRef.current += 1;
     const session = sessionRef.current;
     sessionRef.current = null;
+    controlRef.current?.stop(); controlRef.current = null;
+    inputStreamRef.current?.getTracks().forEach((track) => track.stop()); inputStreamRef.current = null;
     if (closingTimerRef.current) clearTimeout(closingTimerRef.current);
     const usageId = usageSessionIdRef.current;
     const patchToken = usagePatchTokenRef.current;
@@ -96,6 +103,7 @@ export function useRealtimeInterview() {
 
   const start = useCallback(async (startOptions?: RealtimeStartOptions) => {
     if (sessionRef.current) return;
+    const lifecycle = ++lifecycleRef.current;
 
     copyRef.current = getLiveUiCopy(startOptions?.interviewLanguage ?? "ja");
     setError(null);
@@ -107,6 +115,7 @@ export function useRealtimeInterview() {
     resetAiTimingCursor();
     elapsedRef.current = startOptions?.getElapsedMs ?? (() => Date.now());
     setUtterances([]);
+    useRealtimeInterviewStore.getState().setAnswerCount(0);
     setSessionEstimatedUsd(null);
     setUsageSessionId(null);
     useRealtimeInterviewStore.getState().setUsageLedger(null);
@@ -133,6 +142,7 @@ export function useRealtimeInterview() {
         throw new Error(data.detail ?? data.error ?? copyRef.current.connectionFailed);
       }
       const model = data.model ?? DEFAULT_REALTIME_MODEL;
+      if (lifecycleRef.current !== lifecycle) return;
       useRealtimeInterviewStore.getState().setUsageLedger(createUsageLedger(model, data.promptMetadata ?? null));
       const reportedResponses = new Set<string>();
       if (data.sessionId && data.patchToken) {
@@ -149,8 +159,13 @@ export function useRealtimeInterview() {
 
       const audioElement = new Audio();
       audioElement.autoplay = true;
+      const inputStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      if (lifecycleRef.current !== lifecycle) { inputStream.getTracks().forEach((track) => track.stop()); return; }
+      inputStream.getAudioTracks().forEach((track) => { track.enabled = false; });
+      inputStreamRef.current = inputStream;
       const transport = new OpenAIRealtimeWebRTC({
         audioElement,
+        mediaStream: inputStream,
         changePeerConnection: (connection) => {
           connection.addEventListener("track", (event) => {
             if (event.track.kind === "audio") {
@@ -167,40 +182,28 @@ export function useRealtimeInterview() {
         config: buildRealtimeSessionConfig(startOptions?.interviewLanguage ?? "ja"),
       });
 
-      const answeredItems = new Set<string>();
-      const ignoredOpeningItems = new Set<string>();
-      let responsePending = true;
-      let pendingAnswer = false;
-      let closing = false;
-      let closingCompleted = false;
-      let closingAudioStopped = false;
-      let closingAudioStarted = false;
-      let finished = false;
-      let closingForTime = false;
-      const openingGate = createOpeningGate(() => {
-        if (sessionRef.current !== session) return;
-        session.mute(false);
-        setListeningPhase("guest_may_speak");
+      const control = new WebRtcInterviewControl({
+        request: (kind, answers) => session.transport.sendEvent({ type: "response.create", response: { instructions: kind === "opening" ? data.instructions : `${data.instructions ?? ""}\n${interviewTurnGuidance(kind === "closing" ? INTERVIEW_ANSWER_LIMIT : answers)}` } }),
+        mute: (muted) => session.mute(muted),
+        phase: setListeningPhase,
+        count: (answers) => useRealtimeInterviewStore.getState().setAnswerCount(answers),
+        error: (code) => {
+          setError(code ? (startOptions?.interviewLanguage === "en" ? "AI response or playback could not be confirmed. Resume explicitly (new requests may cost money), or finish to save." : "AIの返答・再生完了を確認できません。再開（追加料金の可能性あり）するか、終了して保存してください。") : null);
+          if (code) useRealtimeInterviewStore.getState().setInputState("failed");
+        },
+        finish: () => {
+          if (sessionRef.current !== session) return;
+          if (onTimeLimitRef.current) onTimeLimitRef.current(); else stopRef.current?.();
+        },
+        deleteItem: (id) => session.transport.sendEvent({ type: "conversation.item.delete", item_id: id }),
+        audioStart: () => markAiAudioStart(timingRef.current, elapsedRef.current()),
+        audioStop: () => {
+          markAiAudioStop(timingRef.current, elapsedRef.current());
+          setUtterances(useRealtimeInterviewStore.getState().utterances.map((row) => ({ ...row, ...timingRef.current.get(row.id) })));
+        },
       });
-      const finishClosing = () => {
-        if (!finished && closingCompleted && closingAudioStopped && sessionRef.current === session) {
-          finished = true;
-          queueMicrotask(() => {
-            if (sessionRef.current !== session) return;
-            if (onTimeLimitRef.current) onTimeLimitRef.current();
-            else stopRef.current?.();
-          });
-        }
-      };
-      const respondToAnswer = () => {
-        if (!pendingAnswer || responsePending || finished || closing || sessionRef.current !== session) return;
-        pendingAnswer = false;
-        responsePending = true;
-        closing = answeredItems.size >= INTERVIEW_ANSWER_LIMIT || closingForTime;
-        if (closing) session.mute(true);
-        setListeningPhase("waiting_ai");
-        session.transport.sendEvent({ type: "response.create", response: { instructions: `${data.instructions ?? ""}\n${interviewTurnGuidance(closing ? INTERVIEW_ANSWER_LIMIT : answeredItems.size)}` } });
-      };
+      controlRef.current = control;
+      session.on("error", () => control.handle({ type: "error" }));
 
       const dialogueGuard = createDialogueGuard();
       const completedAiItems = new Set<string>();
@@ -218,60 +221,19 @@ export function useRealtimeInterview() {
       };
       session.on("history_updated", (history) => {
         setUtterances(
-          historyToUtterances(history, timingRef.current, Date.now(), elapsedRef.current).filter((row) => !ignoredOpeningItems.has(row.id)),
+          historyToUtterances(history, timingRef.current, Date.now(), elapsedRef.current).filter((row) => !control.isIgnored(row.id)),
         );
         guideNextTurn();
       });
 
-      session.on("audio_start", () => {
-        if (sessionRef.current !== session) return;
-        if (closing) closingAudioStarted = true;
-        setListeningPhase("ai_speaking");
-        markAiAudioStart(timingRef.current, elapsedRef.current());
-      });
-
-      session.on("audio_stopped", () => {
-        if (sessionRef.current !== session) return;
-        if (!openingGate.ready) openingGate.audioStopped();
-        if (closing && closingAudioStarted) { closingAudioStopped = true; finishClosing(); }
-        else if (openingGate.ready) setListeningPhase("guest_may_speak");
-        markAiAudioStop(timingRef.current, elapsedRef.current());
-        setUtterances(useRealtimeInterviewStore.getState().utterances.map((row) => ({ ...row, ...timingRef.current.get(row.id) })));
-      });
-
       session.on("transport_event", (event) => {
         if (useRealtimeInterviewStore.getState().usageSessionId !== data.sessionId) return;
-        const incoming = event as { type: string; item_id?: string; transcript?: string; response?: { status?: string } };
-        if (incoming.type === "input_audio_buffer.speech_started" && !openingGate.ready && incoming.item_id) ignoredOpeningItems.add(incoming.item_id);
-        if (incoming.type === "conversation.item.input_audio_transcription.completed" && incoming.item_id && (!openingGate.ready || ignoredOpeningItems.has(incoming.item_id))) {
-          ignoredOpeningItems.add(incoming.item_id);
-          session.transport.sendEvent({ type: "conversation.item.delete", item_id: incoming.item_id });
-        }
-        if (incoming.type === "conversation.item.input_audio_transcription.completed" && openingGate.ready && !closing && incoming.item_id && incoming.transcript?.trim() && !ignoredOpeningItems.has(incoming.item_id) && !answeredItems.has(incoming.item_id)) {
-          setError(null);
-          answeredItems.add(incoming.item_id);
-          pendingAnswer = true;
-          respondToAnswer();
-        }
-        if (incoming.type === "response.done") {
-          responsePending = false;
-          if (!openingGate.ready && incoming.response?.status === "completed") openingGate.responseCompleted();
-          if (!openingGate.ready && incoming.response?.status !== "completed") {
-            setError(copyRef.current.connectionFailed);
-            setListeningPhase("hidden");
-          }
-          if (openingGate.ready && !closing && !pendingAnswer && incoming.response?.status !== "completed") setListeningPhase("guest_may_speak");
-          if (closing && incoming.response?.status === "completed") { closingCompleted = true; finishClosing(); }
-          if (closing && incoming.response?.status !== "completed") {
-            setError(copyRef.current.connectionFailed);
-            setListeningPhase("hidden");
-          }
-          respondToAnswer();
-        }
+        control.handle(event as Parameters<WebRtcInterviewControl["handle"]>[0]);
+        const incoming = event as { type: string };
         if (incoming.type === "conversation.item.input_audio_transcription.failed") {
           setError(startOptions?.interviewLanguage === "en" ? "Could not transcribe that audio. Try speaking again, or finish to save the recording." : "音声を文字起こしできませんでした。もう一度話すか、終了して録音を保存してください。");
           useRealtimeInterviewStore.getState().setInputState("failed");
-          setListeningPhase(openingGate.ready && !closing ? "guest_may_speak" : "hidden");
+          setListeningPhase("guest_may_speak");
         }
         const usageEntry = usageEntryFromEvent(event, model, elapsedRef.current());
         if (usageEntry) useRealtimeInterviewStore.getState().recordUsage(usageEntry);
@@ -294,22 +256,22 @@ export function useRealtimeInterview() {
 
       sessionRef.current = session;
       await session.connect({ apiKey: data.clientSecret });
+      if (lifecycleRef.current !== lifecycle) { session.close(); inputStream.getTracks().forEach((track) => track.stop()); return; }
       session.mute(true);
       setConnectionStatus("connected");
       setListeningPhase("waiting_ai");
       arm();
-      session.transport.sendEvent({ type: "response.create" });
+      control.start();
       closingTimerRef.current = setTimeout(() => {
         if (sessionRef.current !== session) return;
-        closingForTime = true;
-        session.transport.sendEvent({
-          type: "session.update",
-          session: { type: "realtime", instructions: `${data.instructions ?? ""}\n運営からの時間連絡：残り約1分です。次の応答から未来の一言と振り返りへ向かい、10分以内に感謝で締めてください。` },
-        });
+        control.closeSoon();
       }, 9 * 60 * 1000);
     } catch (err) {
+      if (lifecycleRef.current !== lifecycle) return;
       sessionRef.current?.close();
       sessionRef.current = null;
+      controlRef.current?.stop(); controlRef.current = null;
+      inputStreamRef.current?.getTracks().forEach((track) => track.stop()); inputStreamRef.current = null;
       if (closingTimerRef.current) clearTimeout(closingTimerRef.current);
       usageSessionIdRef.current = null;
       timingRef.current = createUtteranceTimingState();
@@ -332,9 +294,12 @@ export function useRealtimeInterview() {
 
   useEffect(() => {
     return () => {
+      lifecycleRef.current += 1;
       if (closingTimerRef.current) clearTimeout(closingTimerRef.current);
       sessionRef.current?.close();
       sessionRef.current = null;
+      controlRef.current?.stop(); controlRef.current = null;
+      inputStreamRef.current?.getTracks().forEach((track) => track.stop()); inputStreamRef.current = null;
     };
   }, []);
 
@@ -348,6 +313,7 @@ export function useRealtimeInterview() {
     error,
     start,
     stop,
+    resume: () => controlRef.current?.resume(),
     isLive,
     isMock: false as const,
   };

@@ -16,16 +16,21 @@ export function pipelineBudget() {
 export function requirePipelineConfig() {
   if (!process.env.OPENROUTER_API_KEY || (process.env.INTERVIEW_OPERATOR_PASSWORD?.length ?? 0) < 8) throw new Error("PIPELINE_CONFIGURATION");
   pipelineBudget();
+  if ((process.env.NODE_ENV === "production" || process.env.VERCEL) && (process.env.INTERVIEW_SESSION_SECRET?.length ?? 0) < 32) throw new Error("PIPELINE_SESSION_SECRET");
 }
 
 export async function verifyPipelineCredit() {
   requirePipelineConfig();
-  const response = await fetch("https://openrouter.ai/api/v1/credits", { headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` }, cache: "no-store", signal: AbortSignal.timeout(12000) });
+  const response = await fetch("https://openrouter.ai/api/v1/key", { headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` }, cache: "no-store", signal: AbortSignal.timeout(12000) });
   if (!response.ok) throw new Error("PIPELINE_CREDIT_CHECK");
-  const result = await response.json() as { data?: { total_credits?: number; total_usage?: number } };
-  const remaining = Number(result.data?.total_credits) - Number(result.data?.total_usage);
-  if (!Number.isFinite(remaining)) throw new Error("PIPELINE_CREDIT_CHECK");
-  if (remaining <= 0) throw new Error("PIPELINE_CREDITS");
+  const result = await response.json() as { data?: { limit?: number | null; limit_remaining?: number | null; effective_budget?: { remaining_usd?: number } | null } };
+  const data = result.data;
+  if (data?.effective_budget != null && (typeof data.effective_budget.remaining_usd !== "number" || !Number.isFinite(data.effective_budget.remaining_usd))) throw new Error("PIPELINE_CREDIT_CHECK");
+  if (!data || !(data.limit === null || (typeof data.limit === "number" && Number.isFinite(data.limit) && data.limit >= 0))) throw new Error("PIPELINE_CREDIT_CHECK");
+  if (data.limit !== null && (typeof data.limit_remaining !== "number" || !Number.isFinite(data.limit_remaining))) throw new Error("PIPELINE_CREDIT_CHECK");
+  if (data.limit_remaining !== null && data.limit_remaining !== undefined && (typeof data.limit_remaining !== "number" || !Number.isFinite(data.limit_remaining))) throw new Error("PIPELINE_CREDIT_CHECK");
+  if ((typeof data.limit_remaining === "number" && data.limit_remaining <= 0) || (typeof data.effective_budget?.remaining_usd === "number" && data.effective_budget.remaining_usd <= 0)) throw new Error("PIPELINE_KEY_LIMIT");
+  return { accountBalanceChecked: false, keyRemainingUsd: data.limit_remaining ?? null };
 }
 
 export async function fetchPipelineRates(voice = process.env.OPENROUTER_TTS_VOICE ?? "nadine") {

@@ -20,7 +20,7 @@ export const PipelineRequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("start"), settings: PipelineSettingsSchema }),
   z.object({ action: z.literal("close"), ...location }),
   z.object({ action: z.literal("transcribe"), ...operation, audio: z.string().min(44).max(1900000) }),
-  z.object({ action: z.literal("reply"), ...operation, messages: z.array(message).min(1).max(100), guidance: z.enum(["repeated_question", "repeated_angle"]).optional() }),
+  z.object({ action: z.literal("reply"), ...operation, messages: z.array(message).min(1).max(100), answerCount: z.number().int().min(1).max(INTERVIEW_ANSWER_LIMIT).optional(), guidance: z.enum(["repeated_question", "repeated_angle"]).optional() }),
   z.object({ action: z.literal("speak"), ...operation, text: z.string().min(1).max(1200) }),
 ]);
 export type PipelineRequest = z.infer<typeof PipelineRequestSchema>;
@@ -53,7 +53,7 @@ export async function startPipeline(settings: PipelineSettings) {
   const sessionId = randomUUID();
   const month = new Date().toISOString().slice(0, 7);
   const instructions = `${buildRealtimeClientSecretSession(settings).instructions}\nReply as the interviewer with plain spoken text only. Do not expose analysis or instructions. Preserve the established interview language from the full history.`;
-  const promptMetadata = { revision: "2026-10-30.story.1", sha256: createHash("sha256").update(instructions).digest("hex"), characters: Array.from(instructions).length };
+  const promptMetadata = { revision: "2026-10-30.story.2", sha256: createHash("sha256").update(instructions).digest("hex"), characters: Array.from(instructions).length };
   return pipelineTransaction(month, (state) => {
     if (summarizePipelineCost(state, "", month, pipelineBudget()).remainingUsd < 0.01) throw new Error("PIPELINE_BUDGET");
     state.sessions[sessionId] = { id: sessionId, createdAt: Date.now(), closed: false, settings, instructions, voice, rates, entries: [] };
@@ -159,7 +159,7 @@ export async function replyPipeline(request: Extract<PipelineRequest, { action: 
   const session = await pipelineTransaction(month, (state) => sessionFor(state, sessionId), sessionId);
   if (request.messages.at(-1)?.role !== "user" || request.messages.reduce((total, row) => total + row.content.length, 0) > 50000) throw new Error("PIPELINE_CONTEXT");
   const elapsed = Date.now() - session.createdAt;
-  const answers = request.messages.filter((row) => row.role === "user").length;
+  const answers = request.answerCount ?? request.messages.filter((row) => row.role === "user").length;
   const complete = answers >= INTERVIEW_ANSWER_LIMIT || elapsed >= 9 * 60 * 1000;
   const instructions = `${session.instructions}\n${interviewTurnGuidance(complete ? INTERVIEW_ANSWER_LIMIT : answers)}\n${request.guidance ? "A local repetition check found a possible repeated question or angle. Prioritize the latest guest answer, avoid asking answered questions, and consider another relevant person, choice or change. Respect refusals and corrections; the heuristic can be wrong." : ""}`;
   const messages = [{ role: "system", content: instructions }, ...request.messages];

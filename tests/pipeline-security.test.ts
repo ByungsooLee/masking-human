@@ -62,6 +62,18 @@ describe("operator and scheduled-job security", () => {
     expect(response.headers.get("set-cookie")).toContain("Secure");
     expect((await DELETE(new Request("http://internal/api/pipeline/operator", { method: "DELETE", headers: { origin: "https://interview.example" } }))).headers.get("set-cookie")).toContain("Max-Age=0");
   });
+  it("reports missing production session secrets and local cost storage distinctly", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("INTERVIEW_SESSION_SECRET", "");
+    vi.stubEnv("INTERVIEW_USAGE_STORE", "");
+    const secretResponse = await POST(request());
+    expect(secretResponse.status).toBe(503);
+    expect(await secretResponse.json()).toEqual({ error: "PIPELINE_SESSION_SECRET" });
+    vi.stubEnv("INTERVIEW_SESSION_SECRET", "test-only-random-session-secret-32-plus");
+    const storageResponse = await POST(request());
+    expect(storageResponse.status).toBe(503);
+    expect(await storageResponse.json()).toEqual({ error: "PIPELINE_STORAGE" });
+  });
   it.each(["/api/admin/deletion/process", "/api/admin/storage/sweep"])("allows %s through the cookie gate, but still requires its admin key", async (route) => {
     vi.stubEnv("VERCEL", "1");
     vi.stubEnv("INTERVIEW_OPERATOR_PASSWORD", "");

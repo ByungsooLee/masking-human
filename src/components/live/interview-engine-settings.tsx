@@ -60,7 +60,7 @@ export function InterviewEngineSettings({ value, en, mockOnly, onChange }: { val
           <option value="pipeline">{en ? "Low-cost cloud · OpenRouter (comparison)" : "低コストクラウド・OpenRouter（比較用）"}</option>
         </select>
       </label>
-      {value === "pipeline" && <p>{en ? "Speech recognition, replies and voice are processed through OpenRouter and its providers. The operator must configure access first." : "文字起こし・返答・読み上げをOpenRouterと接続先の事業者で処理します。最初に運営者の設定・ログインが必要です。"}</p>}
+      {value === "pipeline" && <p>{en ? "Speech recognition, replies and voice use OpenRouter and its providers. Preflight checks the key spending limit, not the account balance. Insufficient account credit may still reject requests. Operator sign-in is required." : "文字起こし・返答・読み上げをOpenRouterと接続先の事業者で処理します。開始前に確認するのはキーの利用上限で、アカウント残高ではありません。残高不足で処理が拒否される場合があります。運営者ログインが必要です。"}</p>}
       {!mockOnly && !authorized && <form className="flex flex-col gap-3" aria-busy={busy || checking} onSubmit={(event) => { event.preventDefault(); void login(); }}>
         <label>{en ? "Operator password" : "運営者パスワード"}<input className="ui-field mt-2 w-full" type="password" autoComplete="current-password" value={password} disabled={busy} onChange={(event) => { setPassword(event.target.value); setError(null); }} aria-invalid={Boolean(error)} aria-describedby={error ? "operator-login-error" : undefined} /></label>
         <button className="ui-btn min-h-12 self-start" type="submit" disabled={busy || checking || !password}>{busy ? (en ? "Verifying login…" : "ログインを確認しています…") : checking ? (en ? "Checking…" : "状態を確認中…") : (en ? "Operator sign in" : "運営者ログイン")}</button>

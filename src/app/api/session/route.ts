@@ -78,7 +78,7 @@ export async function POST(req: Request) {
       clientSecret: data.value,
       model,
       instructions: sessionConfig.instructions,
-      promptMetadata: { revision: "2026-10-30.story.1", sha256: createHash("sha256").update(sessionConfig.instructions).digest("hex"), characters: Array.from(sessionConfig.instructions).length },
+      promptMetadata: { revision: "2026-10-30.story.2", sha256: createHash("sha256").update(sessionConfig.instructions).digest("hex"), characters: Array.from(sessionConfig.instructions).length },
       voice: sessionConfig.audio.output.voice,
       sessionId: record.sessionId,
       patchToken: record.patchToken,

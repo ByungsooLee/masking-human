@@ -2,6 +2,13 @@
   "provenance": "Synthetic author-written scenarios, not participant transcripts or generated model results. Human review required; no viral-content or quality guarantee.",
   "cases": [
     {
+      "id": "stop-before-last-two",
+      "language": "ja",
+      "guest": "ここで終わりにしたいです。",
+      "prefer": "6回目の回答でも残り2問を要求せず、短く感謝して質問を止める。終了操作を妨げず、公開同意を補わない。",
+      "avoid": "あと2問だけと促す、最後の名言を求める、話題拒否を全体終了や掲載同意と決めつける。"
+    },
+    {
       "id": "practical-not-personality",
       "language": "ja",
       "guest": "ハンドクリームは近所で買えるので選びました。",

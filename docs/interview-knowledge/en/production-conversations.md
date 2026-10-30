@@ -6,6 +6,16 @@ Updated: 2026-10-27. D20 implementation and workflow. Evaluate participant comfo
 
 ## Instructions for new conversations
 
+### D34: WebRTC playback events and recovery (corrects D33 implementation errors)
+
+- SDK `audio_stopped` signals generation, and generic `audio_start` is absent on WebRTC; neither controls progression. Match `response.created` IDs to `response.done` and `output_audio_buffer.started/stopped/cleared`. Opening release/closing completion require successful generation and stopped for the same response. Ignore stale IDs; never treat cleared as successful closing.
+- Disable the AI-owned input stream tracks before handing them to SDK/connect. Preserve the separate recording stream and stop owned tracks on end/failure/disposal. Ending during initialization must prevent later reconnection.
+- Pause visibly on errors/failed/incomplete responses without automatic paid retries. Explicit Resume requests the same round once without incrementing the eight-answer count. If generation/playback cannot be confirmed in 90 seconds, show an error and offer Resume/Finish rather than cutting audio and pretending success.
+- Count response rounds, not transcription IDs, using shared store/UI state. Group queued segments into one response. Exclude only known acknowledgments up to 1.2 seconds that began during AI playback on Realtime. This is not complete noise detection or semantic answer classification.
+- Put stopping/refusal/skipping first in progression instructions. Topic refusal does not mean ending the interview or publication consent. Do not add automatic spoken-intent termination; preserve Finish. Remove the obsolete nine-minute session.update and retain only next-response closing state. New revision: `2026-10-30.story.2`.
+
+Also test installed SDK event processing with only network connection replaced. Match the official [WebRTC playback events](https://developers.openai.com/api/reference/resources/realtime/server-events), covering generation-only non-release, IDs, playback ordering/clearing, explicit recovery, acknowledgments and grouped segments. Mock/local SDK success does not establish live audio, iPad or speaker playback latency. Signatures, analysis and old transcripts remain unchanged.
+
 ### D33: One short story with a visible ending (2026-10-30; supersedes older time allocations)
 
 Push the review baseline as `afbc534`, then improve conversations separately. Aim for six to eight questions and close after eight nonempty guest answers. Nonempty clarification/skip answers also count; this is not semantic classification of main questions. Ten minutes is a safety ceiling, not a target duration. Preserve early Finish.

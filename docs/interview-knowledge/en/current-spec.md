@@ -8,6 +8,8 @@ Help participants describe concrete experiences and things that matter to them, 
 
 ## Participant experience: current implementation
 
+D34: Fix reviewed P1s: check normal OpenRouter key limits, not account balance; use response-ID-matched WebRTC playback for opening/closing. Share response-round counts with UI, explicitly resume failures and prioritize stopping/refusal over progression. Details/open issues: [conversations](production-conversations.md), [low-cost voice](low-cost-voice.md).
+
 D33: Adopt [one short story with a visible ending](production-conversations.md). Aim for six to eight questions; close after eight nonempty guest answers, then review after playback. Protect opening AI input and add progression to both engines. Preserve the ten-minute ceiling, single questions, non-leading behavior and consent. Live voice improvement remains unverified.
 
 D32: Create a fresh session and save selected initial consents together on each start. Do not reuse old sessionStorage credentials. Distinguish authentication, storage and audio activation failures. Publication/signature consent conditions remain unchanged.
@@ -28,13 +30,13 @@ Preparation → synchronization cue → conversation and recording → transcrip
 
 | Item | Current treatment | Evidence |
 | --- | --- | --- |
-| Live voice | About 10 minutes. AI starts after connection; closing instructions at 9 minutes; expiry at 10 minutes starts ending the session | R1, R3 |
-| Conversation phases | 0–1 minute: opening; 1–3: bridge to everyday life; 3–8: explore experiences; 8–10: articulation and closing. These are design guidelines | R1 |
-| Question count | The old engine's eight-question cap does not apply to current voice conversations. Normally use a brief acknowledgment and one question with one focus | R1, R3 |
+| Live voice | One short story, normally closing at eight answer rounds. The next answer after nine minutes also closes; ten minutes is a safety ceiling | D33, D34 |
+| Conversation phases | One or two opening questions → bridge to life → develop one story → two-remaining/final-question notice and closing | D33, D34 |
+| Question count | Aim for six to eight questions; count up to eight response-request rounds without increasing on explicit retry. Not semantic question classification | D34 |
 | Follow-up depth | Explore one or two memorable experiences through roughly three to six steps. Do not prioritize a quota or repeated “why” questions | R1 |
 | Interviewer | Choose default / reflective, age presentation and gender expression in preparation | R1, R3 |
 | Language | Japanese and English UI. English mode instructs the model to adapt the conversation language from the first substantive answer; Japanese mode does not automatically switch from the opening utterance | R3 |
-| Ending | Live mode proceeds to review through the end button or time limit. A spoken “I want to stop” is not verified to trigger immediate programmatic stopping reliably | R3, R5 |
+| Ending | Successful closing generation plus WebRTC playback drain, Finish or time limit leads to review. Respect spoken stopping through instructions, not automatic intent detection or consent inference | D34, R5 |
 | Demo | `npm run dev:demo`: all APIs blocked, real capture and signature saving disabled. Uses a script and synthetic audio; does not evaluate actual generated conversation quality | R8 |
 
 ### D21: Narrative entry and focus exit (2026-10-27)

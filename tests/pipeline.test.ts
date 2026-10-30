@@ -36,7 +36,7 @@ beforeEach(async () => {
   vi.stubEnv("INTERVIEW_MONTHLY_BUDGET_USD", "10");
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
   vi.stubEnv("VERCEL", "");
-  fetcher.mockReset(); fetcher.mockImplementation(async (url: string) => url.endsWith("/credits") ? new Response(JSON.stringify({ data: { total_credits: 5, total_usage: 0 } })) : catalog());
+  fetcher.mockReset(); fetcher.mockImplementation(async (url: string) => url.endsWith("/credits") ? new Response("{}", { status: 403 }) : url.endsWith("/key") ? new Response(JSON.stringify({ data: { limit: 5, limit_remaining: 5 } })) : catalog());
   vi.stubGlobal("fetch", fetcher);
 });
 afterEach(async () => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); await rm(directory, { recursive: true, force: true }); });
@@ -108,15 +108,30 @@ describe("pipeline cost and authorization", () => {
 });
 
 describe("provider contract and usage", () => {
-  it("blocks an unfunded account before starting a session or generating audio", async () => {
-    fetcher.mockResolvedValue(new Response(JSON.stringify({ data: { total_credits: 0, total_usage: 0 } })));
-    await expect(startPipeline(settings)).rejects.toThrow("PIPELINE_CREDITS");
+  it("blocks an exhausted key limit without claiming to have checked the account balance", async () => {
+    fetcher.mockResolvedValue(new Response(JSON.stringify({ data: { limit: 5, limit_remaining: 0 } })));
+    await expect(startPipeline(settings)).rejects.toThrow("PIPELINE_KEY_LIMIT");
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(pipelineError("PIPELINE_CREDITS", false)).toContain("月間上限の設定だけでは残高は追加されません");
   });
-  it("does not treat a failed balance lookup as a zero balance", async () => {
+  it("does not treat a failed key lookup as a zero account balance", async () => {
     fetcher.mockResolvedValue(new Response("{}", { status: 401 }));
     await expect(verifyPipelineCredit()).rejects.toThrow("PIPELINE_CREDIT_CHECK");
+  });
+  it("uses only the normal-key endpoint even when the management-only credits endpoint rejects access", async () => {
+    expect(await verifyPipelineCredit()).toEqual({ accountBalanceChecked: false, keyRemainingUsd: 5 });
+    const session = await startPipeline(settings);
+    expect(session.sessionId).toBeTruthy();
+    expect(fetcher.mock.calls.some(([url]) => url.endsWith("/credits"))).toBe(false);
+    expect(fetcher.mock.calls.filter(([url]) => url.endsWith("/key"))).toHaveLength(2);
+  });
+  it("accepts explicitly unlimited keys but rejects malformed limit data", async () => {
+    fetcher.mockResolvedValue(new Response(JSON.stringify({ data: { limit: null, limit_remaining: null } })));
+    expect(await verifyPipelineCredit()).toEqual({ accountBalanceChecked: false, keyRemainingUsd: null });
+    for (const data of [{}, { limit: 5, limit_remaining: null }, { limit: 5, limit_remaining: "5" }]) {
+      fetcher.mockResolvedValue(new Response(JSON.stringify({ data })));
+      await expect(verifyPipelineCredit()).rejects.toThrow("PIPELINE_CREDIT_CHECK");
+    }
   });
   it("uses a duration-validated WAV and reports STT costs without a second transcription call", async () => {
     const session = await startPipeline(settings);

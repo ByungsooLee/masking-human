@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-30: Key limits, WebRTC playback sync and recovery (D34)
+
+- Preflight the normal OpenRouter key's spending limit instead of account credits. Use actual installed SDK WebRTC events and response IDs to detect playback completion; keep the opening microphone muted until then. Add explicit resume without automatic retries on errors.
+- Count answer rounds, group queued speech and exclude short acknowledgements from progression. Prioritize stop/refusal over progression guidance. Update bilingual docs and decisions. Account credits, paid APIs and live-device audio remain unverified.
+- Validation: 74 test files, 371 passed and 13 skipped; type check, scoped ESLint and whitespace checks passed. Actual SDK event delivery was tested offline. First build stopped on the known Next.js security warning; retry succeeded. Upgrade recommendation remains open.
+
 ## 2026-10-30: One short story with an ending (D33)
 
 - Push review baseline `afbc534`; subsequent changes add eight-answer progression, closing audio drain, opening protection and concrete-story prompts. Update bilingual specification, evaluation and decisions. No paid API/live voice evaluation.

@@ -1,5 +1,7 @@
 # Conversation quality and validation
 
+D34: Exercise the installed `@openai/agents-realtime` event delivery without network access. Verify that `response.output_audio.done` alone does not release playback and matching `output_audio_buffer.stopped` does. Flow tests cover no automatic paid retry on failure, answer-round deduplication, queued speech grouping, short acknowledgements and stop/refusal priority. Upstream is stubbed; real microphone, acoustics, latency and devices remain unverified.
+
 D33: Human-review bilingual synthetic `eval/interviewer-bounded-cases.json` for practical reasons without personality claims, accepting unclear answers, following events and ending without another question. Progress, SDK-mock and low-cost tests cover opening protection, empty/duplicate input and closing audio drain after eight answers. Not proof of real engagement, acoustics or latency.
 
 D26 (2026-10-30): `tests/pipeline*.test.ts` uses synthetic/stubbed budget concurrency, persistence, Supabase revision conflicts, authentication, backup routing, uncertainty, VAD, sentence speech, final transcription on shutdown, stopping during initialization and bilingual costs. Actual voice models/database/invoices/browser remain unverified. Before promotion, compare ten-minute interviews in both languages for question quality, speech-end-to-first-audio delay, playback leakage, interruption, recording alignment and actual cost. See [setup and validation](low-cost-voice.md).

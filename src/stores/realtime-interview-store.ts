@@ -6,6 +6,8 @@ type RealtimeInterviewState = {
   connectionStatus: ConnectionStatus;
   listeningPhase: ListeningPhase;
   utterances: Utterance[];
+  answerCount: number;
+  setAnswerCount: (count: number) => void;
   error: string | null;
   sessionEndsAt: number | null;
   isMockSession: boolean;
@@ -34,6 +36,7 @@ const initialState = {
   connectionStatus: "idle" as ConnectionStatus,
   listeningPhase: "hidden" as ListeningPhase,
   utterances: [] as Utterance[],
+  answerCount: 0,
   error: null as string | null,
   sessionEndsAt: null as number | null,
   isMockSession: false,
@@ -50,6 +53,7 @@ export const useRealtimeInterviewStore = create<RealtimeInterviewState>((set) =>
   setConnectionStatus: (connectionStatus) => set({ connectionStatus }),
   setListeningPhase: (listeningPhase) => set({ listeningPhase }),
   setUtterances: (utterances) => set({ utterances }),
+  setAnswerCount: (answerCount) => set({ answerCount }),
   setError: (error) => set({ error }),
   setSessionEndsAt: (sessionEndsAt) => set({ sessionEndsAt }),
   setIsMockSession: (isMockSession) => set({ isMockSession }),

@@ -5,7 +5,7 @@ import type { Utterance } from "@/lib/realtime/types";
 import type { PipelineCost, PipelineSettings } from "./types";
 import { encodeInterviewWav, InterviewPcmPlayer, InterviewVoiceDetector } from "./audio";
 import { pipelineError } from "./copy";
-import { countGuestAnswers, INTERVIEW_ANSWER_LIMIT } from "@/lib/realtime/interview-progress";
+import { INTERVIEW_ANSWER_LIMIT } from "@/lib/realtime/interview-progress";
 
 const store = () => useRealtimeInterviewStore.getState();
 
@@ -53,6 +53,8 @@ export class PipelineInterviewClient {
   private stopPromise: Promise<void> | null = null;
   private opening = true;
   private closing = false;
+  private lastAnsweredId: string | null = null;
+  private queuedAudio = 0;
 
   constructor(private options: {
     settings: PipelineSettings;
@@ -100,6 +102,7 @@ export class PipelineInterviewClient {
   }
 
   async start() {
+    store().setAnswerCount(0);
     store().setError(null); store().setUtterances([]); store().setUsageLedger(null);
     store().setSessionEstimatedUsd(null); store().setUsageSessionId(null); store().setIsMockSession(false);
     store().setConnectionStatus("connecting"); store().setListeningPhase("connecting");
@@ -126,10 +129,11 @@ export class PipelineInterviewClient {
           if (!id) return;
           const segment = { frames, final, id, start: this.guestStart, end: this.options.elapsed() - silenceMs };
           if (final) { store().setInputState("transcribing"); this.guestId = null; }
+          this.queuedAudio += 1;
           this.queue = this.queue.then(async () => {
             if (this.paused) { this.deferredAudio.push(segment); return; }
             await this.transcribe(segment);
-          }).catch((error) => { this.failedAudio = segment; this.recordGap(segment, "transcription_failed"); this.fail(error); });
+          }).catch((error) => { this.failedAudio = segment; this.recordGap(segment, "transcription_failed"); this.fail(error); }).finally(() => { this.queuedAudio -= 1; });
         },
       });
       this.source = this.options.context.createMediaStreamSource(this.options.stream);
@@ -158,7 +162,7 @@ export class PipelineInterviewClient {
       if (existing) this.update(segment.id, { text: `${existing.text}${this.options.settings.interviewLanguage === "ja" ? "" : " "}${data.text.trim()}`, endedAt: segment.end });
       else store().setUtterances([...store().utterances, { id: segment.id, speaker: "guest", text: data.text.trim(), startedAt: segment.start, endedAt: segment.end }]);
     }
-    if (this.ended || this.paused || !segment.final) return;
+    if (this.ended || this.paused || !segment.final || this.queuedAudio > 1) return;
     if (!this.guestId) store().setInputState("idle");
     if (!this.guestId && !this.deferredAudio.length && !data.text?.trim() && !store().utterances.some((row) => row.id === segment.id)) {
       const speech = this.interruptedSpeech;
@@ -190,7 +194,12 @@ export class PipelineInterviewClient {
     const controller = this.replyAbort;
     try {
       const rows = store().utterances;
-      this.closing = countGuestAnswers(rows) >= INTERVIEW_ANSWER_LIMIT;
+      const lastGuest = rows.filter((row) => row.speaker === "guest").at(-1);
+      if (lastGuest && lastGuest.id !== this.lastAnsweredId) {
+        this.lastAnsweredId = lastGuest.id;
+        store().setAnswerCount(store().answerCount + 1);
+      }
+      this.closing = store().answerCount >= INTERVIEW_ANSWER_LIMIT;
       const completed = new Set(rows.filter((row) => row.speaker === "ai" && !row.interrupted).map((row) => row.id));
       const notice = this.guard.observe(rows.slice(0, -1), completed);
       const messages = rows.filter((row) => row.speaker !== "host").map((row) => ({ role: row.speaker === "guest" ? "user" : "assistant", content: `${row.text}${row.interrupted ? "\n[Audio was interrupted; the guest may not have heard the full sentence.]" : ""}` }));
@@ -198,7 +207,7 @@ export class PipelineInterviewClient {
         const ledger = store().usageLedger;
         if (ledger) store().setUsageLedger({ ...ledger, dialogueGuidance: [...(ledger.dialogueGuidance ?? []), { afterItemId: notice.afterItemId, reason: notice.reason, atMs: this.options.elapsed() }] });
       }
-      const data = await pipelineJson({ action: "reply", ...this.session, requestId: crypto.randomUUID(), messages, guidance: notice?.reason }, controller.signal);
+      const data = await pipelineJson({ action: "reply", ...this.session, requestId: crypto.randomUUID(), messages, answerCount: store().answerCount, guidance: notice?.reason }, controller.signal);
       if (generation !== this.generation || this.ended) return;
       this.replyAbort = null;
       if (data.complete) this.closing = true;

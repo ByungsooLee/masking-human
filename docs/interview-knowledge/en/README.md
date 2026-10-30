@@ -1,5 +1,7 @@
 # Interview development knowledge
 
+D34 (2026-10-30): [Low-cost key preflight, WebRTC playback sync and answer counting](low-cost-voice.md). Check normal-key limits, test actual SDK events and add explicit recovery. No paid API calls or live-device audio.
+
 D33 (2026-10-30): [One short story with a visible ending](production-conversations.md). After pushing the baseline, separately add eight-answer progression, opening protection and event-focused prompts. Live audio unverified.
 
 D31 (2026-10-30): [Review hardening](low-cost-voice.md), including the extra session secret, migration 007, device checks and unresolved-charge limitations before public deployment.

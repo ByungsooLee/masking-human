@@ -10,7 +10,7 @@ import { useRecordingSession } from "@/contexts/recording-session-context";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 import { saveArchivedSession } from "@/lib/archive/session-archive";
-import { countGuestAnswers, INTERVIEW_ANSWER_LIMIT } from "@/lib/realtime/interview-progress";
+import { INTERVIEW_ANSWER_LIMIT } from "@/lib/realtime/interview-progress";
 
 type Props = { mockOnly: boolean };
 
@@ -20,6 +20,7 @@ function formatElapsed(ms: number): string {
 }
 
 export function PhaseConversation({ mockOnly }: Props) {
+  const answerCount = useRealtimeInterviewStore((state) => state.answerCount);
   const ui = useMagazineFlowUi();
   const prepare = useMagazineFlowStore((state) => state.prepare);
   const setTranscript = useMagazineFlowStore((state) => state.setTranscript);
@@ -87,13 +88,14 @@ export function PhaseConversation({ mockOnly }: Props) {
   return <div className="relative mx-auto flex min-h-[calc(100dvh-3.5rem)] w-full max-w-[88rem] flex-col px-[var(--space-page-x)] py-4">
     <div className="recording-exclude flex items-center justify-between gap-4 pb-4 text-sm">
       <p>{recorder.recording ? ui.recordingOn : ui.recordingOff} <span className="ui-num ml-3">{formatElapsed(tick)}</span></p>
-      <p>{mockOnly ? (prepare.language === "ja" ? "無料デモ" : "Free demo") : `${prepare.language === "ja" ? "回答" : "Answers"} ${Math.min(countGuestAnswers(utterances), INTERVIEW_ANSWER_LIMIT)} / ${INTERVIEW_ANSWER_LIMIT}`}</p>
+      <p>{mockOnly ? (prepare.language === "ja" ? "無料デモ" : "Free demo") : `${prepare.language === "ja" ? "回答" : "Answers"} ${Math.min(answerCount, INTERVIEW_ANSWER_LIMIT)} / ${INTERVIEW_ANSWER_LIMIT}`}</p>
     </div>
     <ConversationWorkspace utterances={utterances} language={prepare.language} guestName={prepare.guestName} inputState={inputState} pendingSince={pendingSince} phase={listeningPhase} error={active.error} onCapture={recorder.captureEditingEvent} />
     <div className="conversation-actions recording-exclude flex flex-col items-start gap-2">
       {mockOnly && !mockScriptComplete && <p className="text-sm text-[color:var(--color-ink-muted)]">{ui.demoWaitForClimax}</p>}
       {active.error && <p role="alert" className="text-[color:var(--color-rose)]">{active.error}</p>}
       {pipelineMode && active.error && <button type="button" className="ui-btn-sub min-h-12" onClick={() => void pipeline.resume()}>{prepare.language === "en" ? "Resume AI (new requests may incur charges)" : "AIを再開（新しい処理の料金が発生します）"}</button>}
+      {!mockOnly && !pipelineMode && active.error && <button type="button" className="ui-btn-sub min-h-12" onClick={() => live.resume()}>{prepare.language === "en" ? "Resume AI (new requests may incur charges)" : "AIを再開（新しい処理の料金が発生します）"}</button>}
       <button type="button" disabled={!canFinish || ending} onClick={() => void end()} className="ui-btn">{ending ? ui.endingConversation : ui.endConversation}</button>
     </div>
   </div>;

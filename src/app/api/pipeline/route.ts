@@ -8,7 +8,7 @@ export const maxDuration = 60;
 
 function errorResponse(error: unknown) {
   const code = error instanceof Error && /^PIPELINE_[A-Z_]+$/u.test(error.message) ? error.message : "PIPELINE_STORAGE";
-  const status = ["PIPELINE_BUDGET", "PIPELINE_CREDITS", "PIPELINE_PAYMENT"].includes(code) ? 402 : code === "PIPELINE_DUPLICATE" || code === "PIPELINE_BUSY" ? 409 : ["PIPELINE_AUDIO", "PIPELINE_CONTEXT", "PIPELINE_SESSION"].includes(code) ? 400 : 503;
+  const status = ["PIPELINE_BUDGET", "PIPELINE_CREDITS", "PIPELINE_KEY_LIMIT", "PIPELINE_PAYMENT"].includes(code) ? 402 : code === "PIPELINE_DUPLICATE" || code === "PIPELINE_BUSY" ? 409 : ["PIPELINE_AUDIO", "PIPELINE_CONTEXT", "PIPELINE_SESSION"].includes(code) ? 400 : 503;
   return NextResponse.json({ error: code }, { status, headers });
 }
 
@@ -16,11 +16,11 @@ export async function GET(request: Request) {
   if (!operatorAuthorized(request)) return NextResponse.json({ error: "PIPELINE_AUTH" }, { status: 401, headers });
   try {
     const url = new URL(request.url);
-    if (url.searchParams.get("preflight") === "1") await verifyPipelineCredit();
+    const preflight = url.searchParams.get("preflight") === "1" ? await verifyPipelineCredit() : undefined;
     const month = url.searchParams.get("month") ?? new Date().toISOString().slice(0, 7);
     const sessionId = url.searchParams.get("sessionId") ?? "";
     if (sessionId && !/^[a-f0-9-]{36}$/u.test(sessionId)) throw new Error("PIPELINE_SESSION");
-    return NextResponse.json({ cost: await pipelineCost(month, sessionId) }, { headers });
+    return NextResponse.json({ cost: await pipelineCost(month, sessionId), preflight }, { headers });
   } catch (error) { return errorResponse(error); }
 }
 
