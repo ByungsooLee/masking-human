@@ -5,7 +5,7 @@ import type { RawRealtimeUsage } from "./normalize-usage";
 export async function patchUsageSession(
   sessionId: string,
   patchToken: string,
-  body: { usage?: RawRealtimeUsage; ended?: boolean },
+  body: { usage?: RawRealtimeUsage; responseId?: string; ended?: boolean },
 ): Promise<number | null> {
   const res = await fetch(`/api/usage/session/${sessionId}`, {
     method: "PATCH",

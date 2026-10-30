@@ -10,6 +10,8 @@ import { buildDraftFromTranscript } from "@/lib/magazine-flow/build-draft-from-t
 import { useRecordingSession } from "@/contexts/recording-session-context";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { activeTranscript } from "@/lib/magazine-flow/validate-guest-text";
+import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
+import { TranscriptionGapNotice } from "@/components/usage/transcription-gap-notice";
 
 function formatTime(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -18,6 +20,7 @@ function formatTime(ms: number): string {
 
 export function PhaseReview() {
   const ui = useMagazineFlowUi();
+  const gaps = useRealtimeInterviewStore((state) => state.usageLedger?.transcriptionGaps);
   const transcript = useMagazineFlowStore((s) => s.transcript);
   const prepare = useMagazineFlowStore((s) => s.prepare);
   const updateTranscriptEntry = useMagazineFlowStore((s) => s.updateTranscriptEntry);
@@ -76,6 +79,7 @@ export function PhaseReview() {
     <div className="mx-auto max-w-[72rem] px-[var(--space-page-x)] py-[var(--space-page-y)]">
       <p className="mb-4">{prepare.language === "ja" ? "ステップ1 / 3 — 含めたくない発言を選ぶ" : "Step 1 / 3 — Choose statements to exclude"}</p>
       <h1 className="ui-heading mb-[var(--space-block)]">{ui.reviewHeading}</h1>
+      <TranscriptionGapNotice gaps={gaps} en={prepare.language !== "ja"} />
       {recorder.blobUrl ? (
         <audio ref={audioRef} src={recorder.blobUrl} controls className="mb-6 w-full max-w-md" />
       ) : (

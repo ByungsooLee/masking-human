@@ -24,9 +24,9 @@ npm run lint
 npm run build
 ```
 
-これまでローカルの対象テスト・型チェック・対象ファイルLintは通過しています。production buildはローカルのsandboxでTurbopackのポート権限制限により完了確認できていません。クラウドで改めて確認してください。既存の無関係な失敗を勝手に修正しないでください。
+既存の無関係な失敗を勝手に修正しないでください。
 
-今回の引き継ぎ確認では全56テストファイル、228件成功・13件スキップ、`tsc --noEmit` 成功。全体Lintは未変更の旧コンポーネント等に9エラー・9警告があり失敗しています（`live-interview.tsx`、`voice-interview.tsx`、`live-stage-context.tsx`、`use-participant-camera.ts`、`use-session-remaining-label.ts` のeffect内更新、`normalize-usage.ts` と既存2テストのprefer-const等）。これは全体Lint成功という意味ではありません。
+D35時点で全74テストファイル、377件成功・13件スキップ、`tsc --noEmit`・全体Lint（0件）・本番ビルドが成功。旧Lint失敗の原因だった未使用の旧UI（`live-interview.tsx`、`voice-interview.tsx` など）は削除済みです。本番ビルドはNext.js 16.4.0の既知脆弱性警告で初回停止し、再実行で完了します。Next.jsの更新は別作業として残っています。
 
 ## 現在の体験
 

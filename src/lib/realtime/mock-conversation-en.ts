@@ -1,5 +1,7 @@
+import { INTERVIEW_OPENING } from "./interview-opening";
+
 const BASE: Record<string, string> = {
-  "mock-ai-1": "Tell me about one cosmetic or skincare item you use often.",
+  "mock-ai-1": INTERVIEW_OPENING.en,
   "mock-guest-1": "My skin gets dry, so I use toner and moisturizer every day.",
   "mock-ai-backchannel": "Toner and moisturizer are part of your daily routine.",
   "mock-ai-2": "Who introduced you to that routine?",

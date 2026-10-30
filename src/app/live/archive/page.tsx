@@ -11,6 +11,8 @@ import { buildArchiveGraph } from "@/lib/graph/build-archive-graph";
 import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 import { bloomFontClassName } from "@/themes/bloom/fonts";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
+import { ConversationJsonDownload } from "@/components/live/conversation-json-download";
+import { signedReleases } from "@/lib/archive/participant-handover";
 
 function guestTexts(row: ArchivedSession) {
   return row.transcript.filter((u) => u.speaker === "guest" && !u.excluded && u.text.trim()).map((u) => u.text);
@@ -89,13 +91,10 @@ export default function LiveArchivePage() {
             <ul className="flex max-w-[var(--content-max)] flex-col gap-4">
               {rows.map((row) => (
                 <li key={row.id} className="ui-panel" data-active={related?.has(row.id) ?? false}>
-                  <p className="text-[length:var(--text-lead)] leading-[var(--leading-body)] text-[color:var(--color-ink)]">
-                    {row.draft?.heroQuote.text ?? row.prepare.place}
-                  </p>
-                  <p className="mt-2 text-[color:var(--color-ink-muted)]">
-                    {row.prepare.place} <span className="ui-num">{row.savedAt.slice(0, 10)}</span>
-                  </p>
+                  <ConversationJsonDownload session={row} en={language === "en"} />
+                  <p className="mt-3 text-[color:var(--color-ink-muted)]">{language === "en" ? `Signature records: ${signedReleases(row).length} / Participant PDFs: ${row.participantReports?.length ?? 0}` : `署名履歴 ${signedReleases(row).length}件 ／ 本人向けPDF ${row.participantReports?.length ?? 0}件`}</p>
                   <div className="mt-3 flex flex-wrap gap-3">
+                    <Link className="ui-btn inline-flex min-h-12 items-center" href={`/live/archive/${encodeURIComponent(row.id)}#participant-report`}>{language === "ja" ? "本人に渡すレポート・署名" : "Participant report & signature"}</Link>
                     <Link className="ui-btn-sub inline-block" href={`/live/archive/${encodeURIComponent(row.id)}`}>{language === "ja" ? "分析結果・素材を開く" : "Open analysis & media"}</Link>
                     <button
                       type="button"

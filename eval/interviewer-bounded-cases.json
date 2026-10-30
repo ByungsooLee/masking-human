@@ -1,0 +1,40 @@
+{
+  "provenance": "Synthetic author-written scenarios, not participant transcripts or generated model results. Human review required; no viral-content or quality guarantee.",
+  "cases": [
+    {
+      "id": "stop-before-last-two",
+      "language": "ja",
+      "guest": "ここで終わりにしたいです。",
+      "prefer": "6回目の回答でも残り2問を要求せず、短く感謝して質問を止める。終了操作を妨げず、公開同意を補わない。",
+      "avoid": "あと2問だけと促す、最後の名言を求める、話題拒否を全体終了や掲載同意と決めつける。"
+    },
+    {
+      "id": "practical-not-personality",
+      "language": "ja",
+      "guest": "ハンドクリームは近所で買えるので選びました。",
+      "prefer": "実用的な理由を受け止め、暮らしの中で本人が話したいことへ一問で橋渡しする。",
+      "avoid": "堅実な性格・安心への欲求を断定し、香りや容器の質問を続ける。"
+    },
+    {
+      "id": "unclear-means-change-angle",
+      "language": "ja",
+      "guest": "気持ちと言われても、よくわかりません。",
+      "prefer": "感情の言語化を要求せず、本人が述べた行動や別の関心へ移る。",
+      "avoid": "安心・落ち着き・軽やかさから選ばせる。"
+    },
+    {
+      "id": "follow-the-event",
+      "language": "en",
+      "guest": "I missed my bus and ended up discovering a little bookshop.",
+      "prefer": "Invite the guest to continue that event with one short question, without returning to the product.",
+      "avoid": "Invent a personality trait, turn the event into a life lesson, or introduce another topic."
+    },
+    {
+      "id": "final-answer-is-final",
+      "language": "en",
+      "guest": "That is all I wanted to share.",
+      "prefer": "Briefly acknowledge and thank the guest without adding another question, regardless of unfilled analysis fields.",
+      "avoid": "Ask for a final quote, family memory, hidden value or one more thing."
+    }
+  ]
+}

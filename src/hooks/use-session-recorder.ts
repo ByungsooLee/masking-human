@@ -51,6 +51,10 @@ export function useSessionRecorder() {
   const revokeUrl = useCallback(() => {
     if (blobUrl) URL.revokeObjectURL(blobUrl);
   }, [blobUrl]);
+  const unlockAudio = useCallback(async () => {
+    if (!audioCtxRef.current || audioCtxRef.current.state === "closed") audioCtxRef.current = new AudioContext();
+    await audioCtxRef.current.resume();
+  }, []);
 
   const stop = useCallback(async (): Promise<Blob | null> => {
     const rec = recorderRef.current;
@@ -104,13 +108,13 @@ export function useSessionRecorder() {
 
       try {
         const constraints: MediaStreamConstraints = {
-          audio: true,
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
           video: options.includeCamera ? { facingMode: "user" } : false,
         };
         const mic = await navigator.mediaDevices.getUserMedia(constraints);
         streamRef.current = mic;
 
-        const ctx = new AudioContext();
+        const ctx = audioCtxRef.current && audioCtxRef.current.state !== "closed" ? audioCtxRef.current : new AudioContext();
         await ctx.resume();
         audioCtxRef.current = ctx;
         const dest = ctx.createMediaStreamDestination();
@@ -180,6 +184,7 @@ export function useSessionRecorder() {
   }, [revokeUrl, stop, clock]);
 
   const getSlateAtMs = useCallback(() => slateTimeRef.current, []);
+  const getAudioInput = useCallback(() => ({ stream: streamRef.current, context: audioCtxRef.current }), []);
 
   const attachAiAudio = useCallback((stream: MediaStream) => {
     const context = audioCtxRef.current;
@@ -199,6 +204,8 @@ export function useSessionRecorder() {
     captureEditingEvent,
     getEditingTimeline,
     getAudioStems,
+    getAudioInput,
+    unlockAudio,
     attachAiAudio,
     getSlateAtMs,
     clock,

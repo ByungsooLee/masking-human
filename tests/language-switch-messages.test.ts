@@ -44,7 +44,7 @@ describe("messages after language switch", () => {
   });
 
   it("provider retry message uses interview language", async () => {
-    let session = (
+    const session = (
       await startInterview("C", provider, undefined, defaultLanguageSettings("ja"))
     ).session;
     session.id = "force-api-failure";

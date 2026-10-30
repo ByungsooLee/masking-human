@@ -9,20 +9,10 @@
 ## 推奨スケジュール
 
 - 本番: 5–15 分間隔
-- Vercel Cron 例（`vercel.json`）:
+- 外部スケジューラーから POST と `X-Admin-Key` を送信します。Cookieは不要ですが、各エンドポイントでAdminキーを必ず検証します。
+- Vercel標準CronはGETのため、このPOSTエンドポイントを直接登録しても動きません。POST/ヘッダーを指定できる実行基盤を使ってください。
 
-```json
-{
-  "crons": [
-    {
-      "path": "/api/admin/deletion/process",
-      "schedule": "*/10 * * * *"
-    }
-  ]
-}
-```
-
-Cron から Admin キーを渡す場合は **Vercel 環境変数** のみに保存し、クエリ文字列に載せない。
+Adminキーは実行基盤のシークレット管理に保存し、クエリ文字列に載せない。
 
 ## 孤立 Storage
 

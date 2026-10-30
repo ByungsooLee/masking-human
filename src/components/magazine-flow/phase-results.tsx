@@ -7,11 +7,13 @@ import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
 import { saveArchivedSession, type ArchivedSession } from "@/lib/archive/session-archive";
 import { FinalAnalysisView } from "@/components/graph/final-analysis-view";
 import { ReleaseConsent } from "@/components/live/release-consent";
+import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 
 export function PhaseResults({ mockOnly = false }: { mockOnly?: boolean }) {
   const state = useMagazineFlowStore();
   const recorder = useRecordingSession();
-  const entry = useMemo<ArchivedSession>(() => ({ id: state.archiveId ?? "pending", savedAt: new Date(state.sessionStartedAt ?? 0).toISOString(), recordedAt: state.sessionStartedAt, prepare: state.prepare, transcript: state.transcript, draft: state.draft, slateAtMs: state.recordingSlateAtMs, recordingBlob: recorder.blob, analysisFeedback: state.analysisFeedback, releaseConsent: state.releaseConsent, audioStems: recorder.audioStems, editingTimeline: recorder.editingTimeline }), [state.archiveId, state.sessionStartedAt, state.prepare, state.transcript, state.draft, state.recordingSlateAtMs, recorder.blob, state.analysisFeedback, state.releaseConsent, recorder.audioStems, recorder.editingTimeline]);
+  const usageLedger = useRealtimeInterviewStore((state) => state.usageLedger);
+  const entry = useMemo<ArchivedSession>(() => ({ id: state.archiveId ?? "pending", savedAt: new Date(state.sessionStartedAt ?? 0).toISOString(), recordedAt: state.sessionStartedAt, prepare: state.prepare, transcript: state.transcript, draft: state.draft, slateAtMs: state.recordingSlateAtMs, recordingBlob: recorder.blob, analysisFeedback: state.analysisFeedback, releaseConsent: state.releaseConsent, audioStems: recorder.audioStems, editingTimeline: recorder.editingTimeline, usageLedger }), [state.archiveId, state.sessionStartedAt, state.prepare, state.transcript, state.draft, state.recordingSlateAtMs, recorder.blob, state.analysisFeedback, state.releaseConsent, recorder.audioStems, recorder.editingTimeline, usageLedger]);
   const [saved, setSaved] = useState<ArchivedSession | null>(null);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);

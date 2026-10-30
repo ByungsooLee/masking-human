@@ -8,10 +8,10 @@ import {
 } from "@/lib/usage/session-usage-store";
 import { authorizeSessionPatch } from "@/lib/usage/authorize-session-patch";
 import { estimateUsdFromSnapshot } from "@/lib/usage/estimate-cost";
-import { emptyUsageSnapshot } from "@/lib/usage/normalize-usage";
 
 type PatchBody = {
   usage?: RawRealtimeUsage;
+  responseId?: string;
   ended?: boolean;
 };
 
@@ -34,7 +34,7 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/usage/session/
 
   if (body.usage) {
     const delta = normalizeRealtimeUsage(body.usage);
-    mergeSessionUsageDelta(id, delta);
+    mergeSessionUsageDelta(id, delta, typeof body.responseId === "string" ? body.responseId : undefined);
   }
 
   if (body.ended) {

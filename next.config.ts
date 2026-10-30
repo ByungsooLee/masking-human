@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  outputFileTracingExcludes: {
+    "/*": ["./private-usage/**/*"],
+  },
   turbopack: {
     rules: {
       "*.css": {

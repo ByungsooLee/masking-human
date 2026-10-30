@@ -30,6 +30,8 @@ function MagazineFlowInner({ mockOnly: mockFromUrl }: Props) {
   const mockOnly = mockFromUrl || demoChosen;
   const goBack = useMagazineFlowStore((s) => s.goBack);
   const sessionEstimatedUsd = useRealtimeInterviewStore((s) => s.sessionEstimatedUsd);
+  const pipelineCost = useRealtimeInterviewStore((state) => state.usageLedger?.pipeline ?? null);
+  const prepare = useMagazineFlowStore((state) => state.prepare);
 
   const showBack =
     phase === "slate" || phase === "conversation" || phase === "magazine" || phase === "publish";
@@ -44,7 +46,10 @@ function MagazineFlowInner({ mockOnly: mockFromUrl }: Props) {
         sessionEstimatedUsd={sessionEstimatedUsd}
         pricingConfigured={isPricingConfigured(DEFAULT_REALTIME_MODEL)}
         showCost={showCost}
-        mockOnly={mockFromUrl}
+        mockOnly={mockOnly}
+        pipelineMode={prepare.interviewEngine === "pipeline"}
+        pipelineCost={pipelineCost}
+        language={prepare.language}
       />
       <main className="flex-1">
         {phase === "prepare" && <PhasePrepare mockOnly={mockOnly} onStartDemo={() => setDemoChosen(true)} />}

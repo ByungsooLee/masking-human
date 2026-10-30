@@ -6,6 +6,7 @@ export type Utterance = {
   text: string;
   startedAt: number;
   endedAt: number;
+  interrupted?: boolean;
 };
 
 export type ConnectionStatus =

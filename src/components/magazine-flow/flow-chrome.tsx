@@ -4,6 +4,8 @@ import { useUiTranslator } from "@/hooks/use-ui-translator";
 
 import { PrimaryNavigation } from "@/components/primary-navigation";
 import { SessionCostBadge } from "@/components/usage/session-cost-badge";
+import { PipelineCostPanel } from "@/components/usage/pipeline-cost-panel";
+import type { PipelineCost } from "@/lib/pipeline/types";
 import { useMagazineFlowUi } from "@/hooks/use-magazine-flow-ui";
 import type { MagazineFlowPhase } from "@/lib/magazine-flow/types";
 
@@ -15,6 +17,9 @@ type Props = {
   pricingConfigured: boolean;
   showCost: boolean;
   mockOnly?: boolean;
+  pipelineMode?: boolean;
+  pipelineCost?: PipelineCost | null;
+  language?: "ja" | "en";
 };
 
 export function FlowChrome({
@@ -25,11 +30,14 @@ export function FlowChrome({
   pricingConfigured,
   showCost,
   mockOnly = false,
+  pipelineMode = false,
+  pipelineCost = null,
+  language = "ja",
 }: Props) {
   const t = useUiTranslator();
   const ui = useMagazineFlowUi();
   return (
-    <header className="recording-exclude shrink-0 border-b border-[color:var(--color-thread)] bg-[rgb(255_255_255/0.8)] px-[var(--space-page-x)] py-3">
+    <header className="recording-exclude sticky top-0 z-40 shrink-0 border-b border-[color:var(--color-thread)] bg-[rgb(255_255_255/0.96)] px-[var(--space-page-x)] py-3">
       <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-4 text-[length:var(--text-body)]">
         <PrimaryNavigation confirmLeave={phase !== "prepare"} />
         <div className="flex items-center gap-3">
@@ -43,7 +51,8 @@ export function FlowChrome({
               if (!window.confirm(message)) event.preventDefault();
             }}
           >{t("開始画面に戻る")}</a>}
-          {showCost && (
+          {showCost && !mockOnly && pipelineMode && <PipelineCostPanel cost={pipelineCost} en={language === "en"} live />}
+          {showCost && (mockOnly || !pipelineMode) && (
             <SessionCostBadge
               inline
               estimatedUsd={sessionEstimatedUsd}

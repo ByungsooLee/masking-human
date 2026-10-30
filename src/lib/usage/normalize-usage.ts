@@ -56,7 +56,7 @@ export function normalizeRealtimeUsage(raw: RawRealtimeUsage): UsageTokenSnapsho
   const cachedDetails = cachedTokensDetails(inputDetails);
 
   let cachedInputText = num(cachedDetails?.text_tokens);
-  let cachedInputAudio = num(cachedDetails?.audio_tokens);
+  const cachedInputAudio = num(cachedDetails?.audio_tokens);
 
   const cachedTotal = detailNum(inputDetails, "cached_tokens");
   if (cachedInputText + cachedInputAudio === 0 && cachedTotal > 0) {

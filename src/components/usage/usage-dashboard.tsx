@@ -7,6 +7,8 @@ import { isPricingConfigured } from "../../../config/pricing";
 import { formatEstimatedUsd, formatUsd, getUsageUiCopy } from "@/lib/i18n/usage-ui";
 import { useUsageSummary } from "@/hooks/use-usage-summary";
 import { useMagazineFlowStore } from "@/stores/magazine-flow-store";
+import type { PipelineCost } from "@/lib/pipeline/types";
+import { PipelineCostPanel } from "./pipeline-cost-panel";
 
 type SessionRow = {
   sessionId: string;
@@ -25,6 +27,19 @@ export function UsageDashboard() {
   const { summary } = useUsageSummary(null);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [daily, setDaily] = useState<DailyRow[]>([]);
+  const [pipelineCost, setPipelineCost] = useState<PipelineCost | null>(null);
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      try {
+        const response = await fetch("/api/pipeline", { cache: "no-store" });
+        if (response.ok) { const data = await response.json(); if (active) setPipelineCost(data.cost); }
+      } catch {}
+    };
+    void refresh();
+    const timer = setInterval(() => { void refresh(); }, 10000);
+    return () => { active = false; clearInterval(timer); };
+  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -43,6 +58,7 @@ export function UsageDashboard() {
   return (
     <div className="theme-ground theme-body mx-auto min-h-screen max-w-[var(--content-max)] px-[var(--space-page-x)] py-[var(--space-page-y)]">
       <h1 className="mb-[var(--space-block)] text-[length:var(--text-display)]">{copy.pageTitle}</h1>
+      <section className="mb-6 border-y py-4"><h2>OpenRouter</h2><PipelineCostPanel cost={pipelineCost} en={language === "en"} live /></section>
       {summary?.spendAlert && <section className="mb-6 rounded-xl border p-4">
         <h2>{t("今月の1ドルアラート：")}{summary.spendAlert.exceeded ? t("超過") : t("未超過")}</h2>
         <p>{t("判定額：$")}{summary.spendAlert.amountUsd.toFixed(3)}（{summary.spendAlert.source === "actual" ? t("実績") : t("推定")}）</p>

@@ -89,6 +89,7 @@ export function ConversationWorkspace({ utterances, language, guestName, inputSt
           {utterances.filter((row) => row.text.trim()).map((row) => <div key={row.id} className="workspace-turn" data-speaker={row.speaker}>
             <p className="workspace-speaker">{row.speaker === "ai" ? (ja ? "聞き手" : "Interviewer") : row.speaker === "guest" ? (ja ? "あなた" : "You") : (ja ? "進行役" : "Host")}</p>
             <p>{row.text}</p>
+            {row.interrupted && <p className="text-sm text-[color:var(--color-ink-muted)]">{ja ? "読み上げは途中で停止しました" : "Audio playback was interrupted"}</p>}
           </div>)}
         </div>
         <p className="workspace-chat-hint">{phase === "ai_speaking" ? (ja ? "聞き手が話しています" : "The interviewer is speaking") : (ja ? "自然なペースでお話しください。" : "Speak at your own pace.")}</p>

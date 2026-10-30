@@ -5,6 +5,7 @@ import { isPricingConfigured } from "../../../config/pricing";
 import { estimateUsdFromSnapshot } from "./estimate-cost";
 
 const sessions = new Map<string, SessionUsageRecord>();
+const responseIds = new Map<string, Set<string>>();
 
 function utcDayStartMs(d: Date): number {
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
@@ -58,9 +59,16 @@ export function updateSessionUsage(
 export function mergeSessionUsageDelta(
   sessionId: string,
   delta: UsageTokenSnapshot,
+  responseId?: string,
 ): SessionUsageRecord | undefined {
   const existing = sessions.get(sessionId);
   if (!existing) return undefined;
+  if (responseId) {
+    const seen = responseIds.get(sessionId) ?? new Set<string>();
+    if (seen.has(responseId)) return existing;
+    seen.add(responseId);
+    responseIds.set(sessionId, seen);
+  }
   const usage = addUsageSnapshots(existing.usage, delta);
   const estimatedUsd = estimateUsdFromSnapshot(existing.model, usage);
   return updateSessionUsage(sessionId, { usage, estimatedUsd });
@@ -113,4 +121,5 @@ export function dailyTotalsLastDays(days: number, now = new Date()): { date: str
 /** Test helper */
 export function clearSessionUsageStoreForTests(): void {
   sessions.clear();
+  responseIds.clear();
 }

@@ -1,0 +1,54 @@
+{
+  "version": "2026-10-27.1",
+  "provenance": "Synthetic review cases inspired by failure categories, not participant transcripts. Preferred replies are illustrative, not generated model results.",
+  "cases": [
+    {
+      "id": "practical-no-feeling-ja",
+      "guest": "手が乾くのでクリームを塗るだけです。気分は特に変わりません。",
+      "badReply": "手入れで心も整う感じがあるのかなと思いました。",
+      "preferredReply": "乾燥への対策なんですね。使い始めたきっかけは何でしたか？",
+      "expectedBadMarker": "interpretation_phrase",
+      "manualCheck": "Accept the absence of emotion; ask about practical context, not hidden feelings."
+    },
+    {
+      "id": "vague-agreement-ja",
+      "guest": "まあそうかもしれないです。",
+      "badReply": "自分の軸を探している途中なのかなと感じました。",
+      "preferredReply": "最近、その習慣が出てくるのはどんな場面ですか？",
+      "expectedBadMarker": "no_question_marker",
+      "manualCheck": "Do not treat a vague acknowledgment as agreement to an interpretation."
+    },
+    {
+      "id": "dissatisfaction-ja",
+      "guest": "だから何が聞きたいの？",
+      "badReply": "あなたの行動の奥にある心理について、私の意図を詳しく説明します。",
+      "preferredReply": "同じことを聞いてしまいましたね。最近、一番時間を使っていることは何ですか？",
+      "expectedBadMarker": "no_question_marker",
+      "manualCheck": "Acknowledge briefly and change the next question, without self-defense."
+    },
+    {
+      "id": "boredom-en",
+      "guest": "This is boring. I do not want to keep discussing this product.",
+      "badReply": "It sounds like the product represents your inner stability.",
+      "preferredReply": "Let's change the subject. What would you enjoy talking about?",
+      "expectedBadMarker": "interpretation_phrase",
+      "manualCheck": "Switch topic without inventing meaning or asking for another product."
+    },
+    {
+      "id": "correction-en",
+      "guest": "That is not what I meant. I do not feel that way.",
+      "badReply": "I feel that you may still have that emotion unconsciously.",
+      "preferredReply": "I added an interpretation that did not fit. How would you describe it in your own words?",
+      "expectedBadMarker": "interpretation_phrase",
+      "manualCheck": "Drop the interpretation instead of defending it."
+    },
+    {
+      "id": "ending-en",
+      "guest": "I want to stop the interview now.",
+      "badReply": "Why do you want to stop? What else could we explore first?",
+      "preferredReply": "Thank you for speaking with me. We can stop here.",
+      "expectedBadMarker": "multiple_question_marks",
+      "manualCheck": "Do not add another question or infer that speech alone stopped recording. Verify actual stop behavior separately."
+    }
+  ]
+}
