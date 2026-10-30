@@ -172,11 +172,17 @@ export class PipelineInterviewClient {
         if (this.noiseRecoveries >= 1) { this.retrySpeech = speech; this.fail(new Error("PIPELINE_NOISE")); return; }
         this.noiseRecoveries += 1;
         void (speech ? this.speak(speech) : this.reply()).catch((error) => this.fail(error));
-      } else store().setListeningPhase("guest_may_speak");
+      } else if (this.hasUnansweredGuest()) void this.reply().catch((error) => this.fail(error));
+      else store().setListeningPhase("guest_may_speak");
       return;
     }
     if (this.guestId || this.deferredAudio.length || store().utterances.at(-1)?.id !== segment.id) return;
     void this.reply().catch((error) => this.fail(error));
+  }
+
+  private hasUnansweredGuest() {
+    const last = store().utterances.at(-1);
+    return last?.speaker === "guest" && last.id !== this.lastAnsweredId;
   }
 
   private recordGap(segment: NonNullable<PipelineInterviewClient["failedAudio"]>, reason: "transcription_failed" | "not_transcribed") {

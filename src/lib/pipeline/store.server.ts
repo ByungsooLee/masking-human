@@ -23,7 +23,7 @@ export async function pipelineTransaction<Result>(month: string, update: (state:
     }
     throw new Error("PIPELINE_STORAGE_BUSY");
   }
-  if (process.env.VERCEL || (process.env.NODE_ENV === "production" && process.env.INTERVIEW_USAGE_STORE !== "file")) throw new Error("PIPELINE_STORAGE");
+  if (process.env.VERCEL || (process.env.NODE_ENV === "production" && process.env.INTERVIEW_USAGE_STORE !== "file")) throw new Error("PIPELINE_STORAGE_CONFIG");
   const directory = process.env.NODE_ENV !== "production" && process.env.INTERVIEW_USAGE_DIR
     ? path.normalize(process.env.INTERVIEW_USAGE_DIR)
     : path.join(process.cwd(), "private-usage");

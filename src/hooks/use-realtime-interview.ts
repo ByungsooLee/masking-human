@@ -23,7 +23,7 @@ import { useRealtimeInterviewStore } from "@/stores/realtime-interview-store";
 import type { InterviewerAgentId, InterviewLanguage, InterviewerProfile } from "@/lib/magazine-flow/types";
 import { useSessionTimeLimit } from "./use-session-time-limit";
 import { inputStateFromTransportEvent } from "@/lib/graph/map-update-status";
-import { INTERVIEW_ANSWER_LIMIT, interviewTurnGuidance } from "@/lib/realtime/interview-progress";
+import { INTERVIEW_ANSWER_LIMIT, interviewRestateGuidance, interviewTurnGuidance } from "@/lib/realtime/interview-progress";
 import { WebRtcInterviewControl } from "@/lib/realtime/web-rtc-interview-control";
 
 export type RealtimeStartOptions = {
@@ -183,7 +183,13 @@ export function useRealtimeInterview() {
       });
 
       const control = new WebRtcInterviewControl({
-        request: (kind, answers) => session.transport.sendEvent({ type: "response.create", response: { instructions: kind === "opening" ? data.instructions : `${data.instructions ?? ""}\n${interviewTurnGuidance(kind === "closing" ? INTERVIEW_ANSWER_LIMIT : answers)}` } }),
+        request: ({ kind, answers, eventId, restate }) => session.transport.sendEvent({ type: "response.create", event_id: eventId, response: { metadata: { interview_request: eventId }, instructions: kind === "opening" ? data.instructions : `${data.instructions ?? ""}\n${restate ? interviewRestateGuidance() : interviewTurnGuidance(kind === "closing" ? INTERVIEW_ANSWER_LIMIT : answers)}` } }),
+        cancel: ({ responseId, clearAudio }) => {
+          try {
+            if (responseId) session.transport.sendEvent({ type: "response.cancel", response_id: responseId });
+            if (clearAudio) session.transport.sendEvent({ type: "output_audio_buffer.clear" });
+          } catch { return; }
+        },
         mute: (muted) => session.mute(muted),
         phase: setListeningPhase,
         count: (answers) => useRealtimeInterviewStore.getState().setAnswerCount(answers),
@@ -203,7 +209,11 @@ export function useRealtimeInterview() {
         },
       });
       controlRef.current = control;
-      session.on("error", () => control.handle({ type: "error" }));
+      session.on("error", (event) => {
+        const server = (event as { error?: { type?: unknown; event_id?: unknown } }).error;
+        if (server?.type === "error" && typeof server.event_id === "string") return;
+        control.transportError();
+      });
 
       const dialogueGuard = createDialogueGuard();
       const completedAiItems = new Set<string>();

@@ -76,6 +76,29 @@ describe("pipeline recording lifecycle", () => {
     expect(reply.mock.calls[0][0].answerCount).toBe(1);
     await interview.stop();
   });
+  it("still answers a queued answer when the noise segment queued behind it transcribes to empty", async () => {
+    const base = fetcher.getMockImplementation()!;
+    const reply = vi.fn(async () => json({ text: "One follow-up?", cost: cost() }));
+    fetcher.mockImplementation(async (url: string, options?: { body?: string }) => {
+      if (options?.body && JSON.parse(options.body).action === "reply") return reply();
+      return base(url, options);
+    });
+    const interview = client(); await interview.start();
+    const turn = () => {
+      for (let index = 0; index < 10; index += 1) { elapsed += 64; capture.port.onmessage?.({ data: new Float32Array(1024).fill(0.05) }); }
+      for (let index = 0; index < 18; index += 1) { elapsed += 64; capture.port.onmessage?.({ data: new Float32Array(1024) }); }
+    };
+    turn(); await vi.waitFor(() => expect(transcriptionResolve).not.toBeNull());
+    const first = transcriptionResolve!;
+    turn(); first(json({ text: "A real answer", cost: cost() }));
+    await vi.waitFor(() => expect(transcriptionResolve).not.toBe(first));
+    expect(reply).not.toHaveBeenCalled();
+    transcriptionResolve!(json({ text: "", cost: cost() }));
+    await vi.waitFor(() => expect(reply).toHaveBeenCalledOnce());
+    expect(useRealtimeInterviewStore.getState().answerCount).toBe(1);
+    expect(useRealtimeInterviewStore.getState().utterances.filter((row) => row.speaker === "guest")).toHaveLength(1);
+    await interview.stop();
+  });
   it("does not interrupt the opening or transcribe noise between its sentences", async () => {
     const base = fetcher.getMockImplementation()!;
     let speechCount = 0;

@@ -72,7 +72,7 @@ describe("operator and scheduled-job security", () => {
     vi.stubEnv("INTERVIEW_SESSION_SECRET", "test-only-random-session-secret-32-plus");
     const storageResponse = await POST(request());
     expect(storageResponse.status).toBe(503);
-    expect(await storageResponse.json()).toEqual({ error: "PIPELINE_STORAGE" });
+    expect(await storageResponse.json()).toEqual({ error: "PIPELINE_STORAGE_CONFIG" });
   });
   it.each(["/api/admin/deletion/process", "/api/admin/storage/sweep"])("allows %s through the cookie gate, but still requires its admin key", async (route) => {
     vi.stubEnv("VERCEL", "1");

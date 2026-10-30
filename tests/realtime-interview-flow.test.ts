@@ -103,16 +103,19 @@ describe("Realtime manual turn orchestration with a mocked SDK, not a live voice
   it.each(["error", "failed", "incomplete"])("makes %s recoverable without counting the same answer again or automatically rebilling", async (failure) => {
     const hook = useRealtimeInterview();
     await hook.start(); created("opening"); playback("opening", "started"); completed("opening"); playback("opening", "stopped");
-    answer("answer-1"); created("failed-reply");
-    if (failure === "error") emit({ type: "error", error: { type: "server_error" } });
-    else completed("failed-reply", failure);
+    answer("answer-1");
+    const requests = () => current.transport.sendEvent.mock.calls.filter(([event]) => event.type === "response.create");
+    if (failure === "error") {
+      emit({ type: "error", event_id: "server-unrelated", error: { type: "invalid_request_error", event_id: "conversation-item-retrieve" } });
+      expect(useRealtimeInterviewStore.getState().error).toBeNull();
+      emit({ type: "error", event_id: "server-rejected", error: { type: "invalid_request_error", event_id: requests().at(-1)![0].event_id } });
+    } else { created("failed-reply"); completed("failed-reply", failure); }
     expect(useRealtimeInterviewStore.getState().error).toBeTruthy();
+    expect(current.transport.sendEvent.mock.calls.filter(([event]) => event.type === "response.cancel")).toHaveLength(0);
     expect(useRealtimeInterviewStore.getState().answerCount).toBe(1);
-    const before = current.transport.sendEvent.mock.calls.filter(([event]) => event.type === "response.create").length;
-    answer("more-audio");
-    expect(current.transport.sendEvent.mock.calls.filter(([event]) => event.type === "response.create")).toHaveLength(before);
+    const before = requests().length;
     hook.resume(); hook.resume();
-    expect(current.transport.sendEvent.mock.calls.filter(([event]) => event.type === "response.create")).toHaveLength(before + 1);
+    expect(requests()).toHaveLength(before + 1);
     expect(useRealtimeInterviewStore.getState().answerCount).toBe(1);
     created("retry"); playback("retry", "started"); completed("retry"); playback("retry", "stopped");
     expect(useRealtimeInterviewStore.getState().error).toBeNull();
@@ -131,6 +134,31 @@ describe("Realtime manual turn orchestration with a mocked SDK, not a live voice
     expect(useRealtimeInterviewStore.getState().answerCount).toBe(1);
     playback("first-reply", "stopped");
     expect(useRealtimeInterviewStore.getState().answerCount).toBe(2);
+    await hook.stop();
+  });
+  it("restates a question cleared by the server for a short acknowledgment instead of going silent", async () => {
+    const hook = useRealtimeInterview();
+    await hook.start(); created("opening"); playback("opening", "started"); completed("opening"); playback("opening", "stopped");
+    answer("first-answer"); created("first-reply"); playback("first-reply", "started"); completed("first-reply");
+    emit({ type: "input_audio_buffer.speech_started", item_id: "ack", audio_start_ms: 1000 });
+    playback("first-reply", "cleared");
+    emit({ type: "input_audio_buffer.speech_stopped", item_id: "ack", audio_end_ms: 1300 });
+    answer("ack", "はい");
+    const requests = current.transport.sendEvent.mock.calls.filter(([event]) => event.type === "response.create").map(([event]) => event);
+    expect(requests).toHaveLength(3);
+    expect(requests[2].response.instructions).toContain("restate only the interrupted question");
+    expect(requests[2].response.metadata).toEqual({ interview_request: requests[2].event_id });
+    expect(useRealtimeInterviewStore.getState().answerCount).toBe(1);
+    await hook.stop();
+  });
+  it("cancels the server response and clears playback when the connection reports an error mid-reply", async () => {
+    const hook = useRealtimeInterview();
+    await hook.start(); created("opening"); playback("opening", "started"); completed("opening"); playback("opening", "stopped");
+    answer("first-answer"); created("first-reply"); playback("first-reply", "started");
+    current.handlers.get("error")?.({ type: "error", error: new Error("data channel closed") });
+    expect(current.transport.sendEvent).toHaveBeenCalledWith({ type: "response.cancel", response_id: "first-reply" });
+    expect(current.transport.sendEvent).toHaveBeenCalledWith({ type: "output_audio_buffer.clear" });
+    expect(useRealtimeInterviewStore.getState().error).toBeTruthy();
     await hook.stop();
   });
   it("never treats a cleared closing buffer as successful completion", async () => {

@@ -7,7 +7,7 @@ const headers = { "Cache-Control": "no-store" };
 export const maxDuration = 60;
 
 function errorResponse(error: unknown) {
-  const code = error instanceof Error && /^PIPELINE_[A-Z_]+$/u.test(error.message) ? error.message : "PIPELINE_STORAGE";
+  const code = error instanceof Error && /^PIPELINE_[A-Z_]+$/u.test(error.message) ? error.message : "PIPELINE_INTERNAL";
   const status = ["PIPELINE_BUDGET", "PIPELINE_CREDITS", "PIPELINE_KEY_LIMIT", "PIPELINE_PAYMENT"].includes(code) ? 402 : code === "PIPELINE_DUPLICATE" || code === "PIPELINE_BUSY" ? 409 : ["PIPELINE_AUDIO", "PIPELINE_CONTEXT", "PIPELINE_SESSION"].includes(code) ? 400 : 503;
   return NextResponse.json({ error: code }, { status, headers });
 }

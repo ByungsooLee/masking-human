@@ -12,7 +12,7 @@ describe("installed SDK WebRTC event semantics without connecting or billing", (
     vi.spyOn(transport, "connect").mockResolvedValue(undefined);
     await session.connect({ apiKey: "mock-no-network" });
     const generatedStop = vi.fn(); const genericStart = vi.fn(); const mute = vi.fn();
-    const control = new WebRtcInterviewControl({ mute, request: vi.fn(), phase: vi.fn(), count: vi.fn(), error: vi.fn(), finish: vi.fn(), deleteItem: vi.fn(), audioStart: vi.fn(), audioStop: vi.fn() });
+    const control = new WebRtcInterviewControl({ mute, request: vi.fn(), cancel: vi.fn(), phase: vi.fn(), count: vi.fn(), error: vi.fn(), finish: vi.fn(), deleteItem: vi.fn(), audioStart: vi.fn(), audioStop: vi.fn() });
     session.on("audio_start", genericStart);
     session.on("audio_stopped", generatedStop);
     session.on("transport_event", (event) => control.handle(event as Parameters<typeof control.handle>[0]));

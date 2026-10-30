@@ -12,7 +12,7 @@ export async function consumeOperatorAttempt(request: Request, now = Date.now())
     if (result.error || typeof result.data !== "boolean") throw new Error("PIPELINE_STORAGE");
     return result.data;
   }
-  if (process.env.VERCEL || (process.env.NODE_ENV === "production" && process.env.INTERVIEW_USAGE_STORE !== "file")) throw new Error("PIPELINE_STORAGE");
+  if (process.env.VERCEL || (process.env.NODE_ENV === "production" && process.env.INTERVIEW_USAGE_STORE !== "file")) throw new Error("PIPELINE_STORAGE_CONFIG");
   const directory = process.env.NODE_ENV !== "production" && process.env.INTERVIEW_USAGE_DIR ? process.env.INTERVIEW_USAGE_DIR : path.join(process.cwd(), "private-usage");
   await mkdir(directory, { recursive: true, mode: 0o700 });
   const lock = path.join(directory, "operator-attempts.lock");
