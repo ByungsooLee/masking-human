@@ -1,5 +1,8 @@
 # 出典台帳
 
+THM-01（2026-11-03）：[THE HUMAN MIRRORの出典・確度](../../the-human-mirror-handoff.md)。ユーザーの本依頼と参照会話の直近10ターン（一部省略）を企画資料として統合。過去のAI回答は製品性能やLife on Filmの事業実績の独立証拠ではありません。実験件数・配分は新たな提案です。
+
+
 D26（2026-10-30）：[低コスト方式の一次資料・実装説明](../low-cost-voice.md)。OpenRouter公式のSTT/TTS契約、text/transcription/speech別公開カタログを確認。実装は `src/lib/pipeline/`、APIは `src/app/api/pipeline/`、検証は `tests/pipeline*.test.ts`。実利用の品質・請求を実証する資料ではありません。
 
 [English](../en/sources/README.md)
