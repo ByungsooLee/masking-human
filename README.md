@@ -1,5 +1,8 @@
 # 手入れの記憶
 
+THE HUMAN MIRROR の企画・SNS・実写×AIキャラ・技術検証・事業化の引き継ぎは [企画ブリーフ](docs/the-human-mirror-handoff.md)（[English](docs/en/the-human-mirror-handoff.md)）を参照。確定方針と検討案を分けた資料で、現行アプリの動作は変更していません。
+
+
 コスメと肌の手入れを入口に、AI 聞き手が音声でインタビューする Web アプリです。
 
 ## 開発資料

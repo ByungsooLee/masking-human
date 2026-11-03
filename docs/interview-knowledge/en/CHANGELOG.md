@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-03: THE HUMAN MIRROR handoff (THM-01)
+
+- Add Japanese/English creative brief, production checks, open decisions and initial experiments; connect README, development handoff and editing template.
+- Review main `5b031c7`, the six requested files and required knowledge. Documentation only; behavior/consent unchanged. Check links, diff and bilingual correspondence. No real-device, paid API, real-email or SNS posting tests.
+
+
 ## 2026-10-30: Bring security PR #6 up to date with main
 
 - Merge main through D35 into existing PR #6 (Next.js and `eslint-config-next` 16.4.0→16.4.3, `experimental.agentUpgrade: "security"`); changelog conflicts kept both records. No duplicate PR.

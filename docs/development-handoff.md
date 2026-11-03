@@ -1,5 +1,10 @@
 # 開発引き継ぎ（2026-10-23）
 
+## 企画の追加引き継ぎ（2026-11-03）
+
+[THE HUMAN MIRROR](the-human-mirror-handoff.md)（[English](en/the-human-mirror-handoff.md)）に街頭企画・制作・初期実験・未決事項を統合しました。オフライン優先・1〜3分・キャラ合成は開発／演出の検証方針で、現行アプリの実装済み機能ではありません。THM-01、挙動変更なし。以下の古い検証記録にあるNext.js更新待ちは履歴であり、今回確認したmainではPR #6により16.4.3へ更新済みです。
+
+
 ## 仕様・対話ノウハウの入口（2026-10-23追記）
 
 [インタビュー開発ナレッジ](interview-knowledge/README.md) に現行仕様、聞き方、評価案、NotebookLM原資料との照合と未決事項をまとめました。旧 `requirements.md` / `interview-design.md` / `testing.md` には旧段階の記述が残るため、現在の音声会話を変更する際は新しい入口を先に読んでください。[英語版](interview-knowledge/en/README.md) と [必読・変更手順](interview-knowledge/development-workflow.md) も参照し、ルート `AGENTS.md` のルールに従って既存仕様と日英資料を維持してください。以下の検証結果は各記載時点の記録です。

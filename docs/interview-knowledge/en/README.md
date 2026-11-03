@@ -1,5 +1,8 @@
 # Interview development knowledge
 
+THM-01 (2026-11-03): [THE HUMAN MIRROR handoff](../../en/the-human-mirror-handoff.md). Separates the current app from creative hypotheses and open choices. No behavior change.
+
+
 D34 (2026-10-30): [Low-cost key preflight, WebRTC playback sync and answer counting](low-cost-voice.md). Check normal-key limits, test actual SDK events and add explicit recovery. No paid API calls or live-device audio.
 
 D33 (2026-10-30): [One short story with a visible ending](production-conversations.md). After pushing the baseline, separately add eight-answer progression, opening protection and event-focused prompts. Live audio unverified.
